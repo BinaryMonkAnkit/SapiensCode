@@ -1,0 +1,446 @@
+/* ==========================================================================
+   Global Theme Configuration & System Fonts
+   ========================================================================== */
+.chat-container {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 0 24px;
+  overflow: hidden;
+  background: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dark-theme {
+  --chat-text-main: rgba(255, 255, 255, 0.94);
+  --chat-text-muted: rgba(255, 255, 255, 0.45);
+  --chat-border: rgba(255, 255, 255, 0.07);
+  --user-bubble-bg: rgba(255, 255, 255, 0.04);
+  --user-bubble-border: rgba(255, 255, 255, 0.06);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.14);
+  --claude-edit-border: rgba(255, 255, 255, 0.15);
+  --claude-btn-hover: rgba(255, 255, 255, 0.06);
+}
+
+.light-theme {
+  --chat-text-main: #1d1d1f;
+  --chat-text-muted: rgba(0, 0, 0, 0.5);
+  --chat-border: rgba(0, 0, 0, 0.07);
+  --user-bubble-bg: rgba(0, 0, 0, 0.03);
+  --user-bubble-border: rgba(0, 0, 0, 0.05);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+  --claude-edit-border: rgba(0, 0, 0, 0.15);
+  --claude-btn-hover: rgba(0, 0, 0, 0.04);
+}
+
+.chat-container color { color: var(--chat-text-main); }
+
+.chat-header-chrome {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--chat-border);
+}
+
+.chrome-title {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.8;
+  letter-spacing: -0.01em;
+}
+
+/* ==========================================================================
+   Workspace Scroll Layout Track
+   ========================================================================== */
+.chat-workspace-body {
+  flex: 1;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.grid-empty { display: block; }
+.grid-active {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.welcome-hero {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: 100%;
+}
+
+.hero-title {
+  font-size: 2.2rem;
+  font-weight: 400;
+  opacity: 0.85;
+  letter-spacing: -0.02em;
+}
+
+.conversation-flow {
+  width: 100%;
+  flex: 1;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  box-sizing: border-box;
+}
+
+.conversation-flow::-webkit-scrollbar { width: 6px; }
+.conversation-flow::-webkit-scrollbar-track { background: transparent; }
+.conversation-flow::-webkit-scrollbar-thumb { background: transparent; border-radius: 99px; }
+.conversation-flow:hover::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); }
+
+.scroll-content-centered-lane {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* ==========================================================================
+   Structural Chat Rows & Layout Docks
+   ========================================================================== */
+.message-row {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeInMessage 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.bubble-wrapper {
+  display: flex;
+  flex-direction: column;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.assistant-row { justify-content: flex-start; }
+.assistant-row .bubble-wrapper {
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.user-row { justify-content: flex-end; }
+.user-row .bubble-wrapper {
+  background: var(--user-bubble-bg);
+  border: 1px solid var(--user-bubble-border);
+  border-radius: 16px;
+  padding: 12px 16px;
+  width: fit-content;
+  min-width: 160px;
+  max-width: 85%;
+  text-align: left;
+  align-self: flex-end;
+}
+
+.bubble-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  color: var(--chat-text-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--chat-text-muted);
+  opacity: 0.5;
+  transition: all 0.15s ease;
+  padding: 4px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.action-btn:hover:not(:disabled) {
+  opacity: 1;
+  background: var(--claude-btn-hover);
+  color: var(--chat-text-main);
+}
+
+.btn-label-text {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.message-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--chat-text-main);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.assistant-bottom-dock {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 8px;
+  padding-left: 2px;
+}
+
+.user-bottom-dock {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  border-top: 1px solid var(--chat-border);
+  padding-top: 6px;
+}
+
+/* ==========================================================================
+   Fluid Claude-Style Inline Editor System
+   ========================================================================== */
+.claude-edit-lane-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  animation: fadeInMessage 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.claude-edit-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100px;
+  border: 1px solid var(--claude-edit-border);
+  border-radius: 16px;
+  background: var(--user-bubble-bg);
+  padding: 16px 20px;
+  box-sizing: border-box;
+  height: auto;
+}
+
+.claude-edit-textarea {
+  width: 100% !important;
+  display: block;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow-y: hidden;
+  color: var(--chat-text-main);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+  padding: 0;
+  margin: 0 0 16px 0;
+  box-sizing: border-box;
+}
+
+.claude-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid var(--chat-border);
+  padding-top: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.claude-btn-cancel, 
+.claude-btn-save {
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.claude-btn-cancel {
+  background: transparent;
+  border: 1px solid var(--claude-edit-border);
+  color: var(--chat-text-main);
+}
+
+.claude-btn-cancel:hover { background: var(--claude-btn-hover); }
+
+.dark-theme .claude-btn-save { background: #e2e8f0; border: none; color: #0f172a; }
+.dark-theme .claude-btn-save:hover { background: #f1f5f9; }
+
+.light-theme .claude-btn-save { background: #111111; border: none; color: #ffffff; }
+.light-theme .claude-btn-save:hover { background: #222222; }
+
+/* ==========================================================================
+   Advanced Content Formatting Structure (Code Blocks & Tables)
+   ========================================================================== */
+.code-block-container {
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--chat-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.dark-theme .code-block-container { background: #141416; }
+.light-theme .code-block-container { background: #f6f8fa; }
+
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--chat-border);
+  user-select: none;
+}
+.dark-theme .code-block-header { background: #1f1f23; }
+.light-theme .code-block-header { background: #eaedf0; }
+
+.code-block-lang {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--chat-text-muted);
+}
+
+.code-block-copy-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--chat-text-muted);
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+.code-block-copy-btn:hover { color: var(--chat-text-main); background: var(--claude-btn-hover); }
+
+.code-block-scroll { width: 100%; overflow-x: auto; }
+
+.inline-code {
+  padding: 2px 5px;
+  font-size: 13px;
+  font-family: SFMono-Regular, Consolas, Menlo, monospace;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.light-theme .inline-code { background: rgba(0, 0, 0, 0.05); }
+
+.table-container { width: 100%; overflow-x: auto; margin: 16px 0; border-radius: 8px; border: 1px solid var(--chat-border); }
+.markdown-table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }
+.markdown-table th, .markdown-table td { padding: 10px 14px; border-bottom: 1px solid var(--chat-border); }
+.markdown-table th { font-weight: 600; }
+.dark-theme .markdown-table th { background: #1f1f23; }
+.light-theme .markdown-table th { background: #eaedf0; }
+.markdown-table tr:last-child td { border-bottom: none; }
+.markdown-table tr:nth-child(even) { background: rgba(0, 0, 0, 0.02); }
+
+/* ==========================================================================
+   Prompt Anchors
+   ========================================================================== */
+.prompt-dock-center { position: absolute; bottom: 35%; left: 50%; transform: translateX(-50%); width: 100%; max-width: 640px; z-index: 50; }
+.prompt-dock-bottom { flex-shrink: 0; width: 100%; max-width: 640px; margin: 0 auto; padding-bottom: 24px; padding-top: 8px; z-index: 50; animation: slideInFromCenter 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+@keyframes fadeInMessage { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInFromCenter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+
+/* ==========================================================================
+   ✨ LEFT-SIDED SMOOTH VISIBILITY SCROLLBAR ENGINE
+   ========================================================================== */
+
+.conversation-flow {
+  width: 100%;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+  /* 1. Forces scrollbar lane to mirror to the LEFT side */
+   
+  
+  box-sizing: border-box;
+  padding: 24px;
+  
+  /* Modern Webkit Scrollbar definition */
+  scrollbar-width: thin;
+  transition: scrollbar-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  /* Hide scrollbar color by default via fully clear channels */
+  scrollbar-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0);
+}
+
+/* 2. Reverts internal text direction container back to standard reading alignment */
+.scroll-content-centered-lane {
+  direction: ltr; 
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Webkit Scrollbar Dimensions */
+.conversation-flow::-webkit-scrollbar {
+  width: 5px; /* Soothing thin metric width */
+}
+
+.conversation-flow::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Hidden transparent state defaults */
+.conversation-flow::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0);
+  border-radius: 20px;
+  transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* 3 & 4. Reveal custom themed colors during hovering OR active scrolling */
+.conversation-flow:hover,
+.conversation-flow.scrolling-active {
+  /* Firefox Fallback Colors */
+  scrollbar-color: rgba(160, 160, 165, 0.45) rgba(0, 0, 0, 0);
+}
+
+.dark-theme .conversation-flow:hover::-webkit-scrollbar-thumb,
+.dark-theme .conversation-flow.scrolling-active::-webkit-scrollbar-thumb {
+  /* Dark Mode: Pure Silver Translucent track thumb */
+  background: rgba(0, 0, 0, 0.45); 
+}
+
+.light-theme .conversation-flow:hover::-webkit-scrollbar-thumb,
+.light-theme .conversation-flow.scrolling-active::-webkit-scrollbar-thumb {
+  /* Light Mode: Dark Silver Black combo color track thumb */
+  background: rgba(0, 0, 0, 0.35); 
+}
+
+/* Smooth hover hover enhancements over the scrollbar thumb box directly */
+.conversation-flow::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 6, 6, 0.8) !important;
+}
+.light-theme .conversation-flow::-webkit-scrollbar-thumb:hover {
+  background: rgba(85, 85, 95, 0.6) !important;
+}

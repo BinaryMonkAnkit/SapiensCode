@@ -1,0 +1,423 @@
+/* Base Layout Resets */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Theme Setup */
+.glass-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  display: flex;
+  flex-direction: row;
+}
+
+.glass-wrapper.dark-theme {
+  background-color: #0d0e12;
+  color: #ffffff;
+}
+
+.glass-wrapper.light-theme {
+  background-color: #4e4e4e;
+  color: #111827;
+}
+
+.svg-filter-hidden {
+  display: none;
+}
+
+/* Ambient Radial Glows */
+.ambient-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(140px);
+  transition: opacity 0.5s ease;
+}
+
+.dark-theme .glow-1 {
+  top: 10%;
+  left: 20%;
+  width: 600px;
+  height: 600px;
+  background: rgba(30, 58, 138, 0.35);
+}
+
+.dark-theme .glow-2 {
+  bottom: 10%;
+  right: 25%;
+  width: 700px;
+  height: 700px;
+  background: rgba(88, 28, 135, 0.3);
+}
+
+.light-theme .glow-1 {
+  top: 10%;
+  left: 20%;
+  width: 600px;
+  height: 600px;
+  background: rgba(147, 197, 253, 0.45);
+}
+
+.light-theme .glow-2 {
+  bottom: 10%;
+  right: 25%;
+  width: 700px;
+  height: 700px;
+  background: rgba(216, 180, 254, 0.4);
+}
+
+/* Main Viewport (Takes up 100% minus the right dock) */
+/* Main Viewport (Takes up 100% minus the right dock) */
+.window-viewport {
+  position: relative;
+  flex: 1;
+  width: auto;
+  height: 100vh;
+  max-height: 100vh;  /* Hard constraint layout lock */
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+  overflow: hidden;   /* Stops layout elements from bulging past the screen border */
+}
+
+/* Glass Card Styling */
+.glass-card {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  height: 100%;       /* Strictly forces the card to match the exact 100vh of the viewport */
+  max-height: 100%;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;   /* Keeps inner containers cleanly trapped inside */
+  will-change: transform, opacity, backdrop-filter;
+  transition: border-color 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.dark-theme .glass-card {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+}
+
+.light-theme .glass-card {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+}
+
+.specular-edge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  pointer-events: none;
+}
+
+.grain-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+  filter: url(#glass-grain);
+}
+
+/* macOS Window Header Chrome */
+/* .window-chrome {
+  height: 48px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid;
+}
+
+.dark-theme .window-chrome {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.light-theme .window-chrome {
+  border-color: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.mac-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-red { background-color: #ff5f56; }
+.dot-yellow { background-color: #ffbd2e; }
+.dot-green { background-color: #27c93f; }
+
+.chrome-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.chrome-spacer {
+  width: 52px;
+}
+
+/* Card Content Area */
+/* Card Content Area */
+.card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start; /* Keeps content anchored cleanly from the top */
+  text-align: center;
+  padding: 0;
+  height: 100%;       /* Hard constraint to prevent card overflow blowouts */
+  min-height: 0;      /* Crucial fix to allow flex children to shrink below content size */
+  overflow: hidden;   /* Shuts down outer body leakages */
+}
+
+.content-title {
+  font-size: 44px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.content-subtitle {
+  font-size: 16px;
+  max-width: 480px;
+  line-height: 1.6;
+  margin: 0;
+  opacity: 0.65;
+} 
+/* ------------------------------------------------------------------ */
+/* Right Control Dock — sized to match a shrunk Claude-style side rail */
+/* ------------------------------------------------------------------ */
+.right-dock {
+  position: relative;
+  flex-shrink: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  box-sizing: border-box;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-left: 1px solid;
+  z-index: 100;
+}
+
+.dark-theme .right-dock {
+  background: rgba(13, 14, 18, 0.7);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  --dock-icon-idle: rgba(255, 255, 255, 0.45);
+  --dock-icon-hover: rgba(255, 255, 255, 0.9);
+  --dock-accent: #f4f4f5;
+  --dock-accent-glow: rgba(244, 244, 245, 0.85);
+  --dock-tooltip-bg: #18181b;
+  --dock-tooltip-fg: #f4f4f5;
+}
+
+.light-theme .right-dock {
+  background: rgba(238, 242, 246, 0.7);
+  border-color: rgba(0, 0, 0, 0.06);
+  color: #111827;
+  --dock-icon-idle: rgba(17, 24, 39, 0.4);
+  --dock-icon-hover: rgba(17, 24, 39, 0.85);
+  --dock-accent: #334155;
+  --dock-accent-glow: rgba(51, 65, 85, 0.6);
+  --dock-tooltip-bg: #1e293b;
+  --dock-tooltip-fg: #f8fafc;
+}
+
+/* Dock Buttons (top Grid icon) */
+.dock-btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 10px;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dock-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.light-theme .dock-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Icon column (no scroll track, no thumb) */
+.dots-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+  margin: auto 0;
+}
+
+/* Icon buttons */
+.dock-icon-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--dock-icon-idle);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 0.25s ease,
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 0.25s ease;
+}
+
+/* Hover: noticeably bigger + brighter glow, even when not the active section */
+.dock-icon-btn:hover {
+  color: var(--dock-icon-hover);
+  transform: scale(1.35);
+  filter: drop-shadow(0 0 10px var(--dock-accent-glow));
+}
+
+.dock-icon-btn:active {
+  transform: scale(1.15);
+}
+
+/* Active section: bigger still, lifted, strong glow */
+.dock-icon-active {
+  color: var(--dock-accent) !important;
+  transform: translateY(-3px) scale(1.3);
+  filter: drop-shadow(0 6px 14px var(--dock-accent-glow));
+}
+
+/* Active AND hovered: the biggest, brightest state */
+.dock-icon-active:hover {
+  transform: translateY(-3px) scale(1.5);
+  filter: drop-shadow(0 8px 18px var(--dock-accent-glow))
+    drop-shadow(0 0 14px var(--dock-accent-glow));
+}
+
+.dock-icon-active:active {
+  transform: translateY(-1px) scale(1.35);
+}
+
+/* Tooltip, Claude-sidebar style */
+.dock-tooltip {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translate(6px, -50%);
+  white-space: nowrap;
+  background: var(--dock-tooltip-bg);
+  color: var(--dock-tooltip-fg);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.dock-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-left-color: var(--dock-tooltip-bg);
+}
+
+.dock-icon-btn:hover .dock-tooltip,
+.dock-icon-btn:focus-visible .dock-tooltip {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+/* Dock Bottom Theme Switcher */
+.dock-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-toggle-btn {
+  background: transparent;
+  border: 1px solid;
+  color: inherit;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.dark-theme .theme-toggle-btn {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fbbf24;
+}
+
+.light-theme .theme-toggle-btn {
+  border-color: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.03);
+  color: #1e293b;
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.08);
+}
