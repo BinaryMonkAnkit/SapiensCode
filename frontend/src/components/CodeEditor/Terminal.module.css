@@ -1,56 +1,71 @@
+/* Terminal.module.css */
+
 .terminal {
   height: 100%;
   min-height: 0;
   width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  background: #0f0f10;
+  background: var(--sb-bg-secondary);
   font-family: var(--sb-font-mono);
   color: var(--sb-text-primary);
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
+/* --- REVERTED TOP TITLEBAR TO ORIGINAL DESIGN --- */
 .titlebar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  padding: 11px 14px;
+  padding: 10px 14px;
   background: var(--sb-bg-elevated);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 1px solid var(--sb-border);
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.dot {
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  display: inline-block;
-  transition: filter var(--sb-dur-fast) var(--sb-ease);
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
-.titlebar:hover .dot {
-  filter: brightness(1.15);
-}
-.red { background: #ff5f57; }
-.yellow { background: #febc2e; }
-.green { background: #28c840; }
 
 .title {
-  margin-left: 8px;
   font-size: 12px;
   font-family: var(--sb-font-ui);
-  font-weight: 590;
-  color: var(--sb-text-secondary);
+  font-weight: 600;
+  color: var(--sb-text-primary);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.badge {
+  font-size: 10px;
+  font-family: var(--sb-font-ui);
+  background: var(--sb-bg-tertiary);
+  color: var(--sb-text-tertiary);
+  padding: 2px 6px;
+  border-radius: var(--sb-radius-sm);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .status {
-  margin-left: auto;
   font-size: 11px;
   font-family: var(--sb-font-ui);
   color: var(--sb-text-tertiary);
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .status .led {
@@ -59,73 +74,77 @@
   border-radius: 50%;
   background: var(--sb-red);
   transition: background var(--sb-dur-med) var(--sb-ease);
+  flex-shrink: 0;
 }
+
 .status.connected .led {
   background: var(--sb-green);
   box-shadow: 0 0 0 3px rgba(48, 209, 88, 0.16);
 }
+
 .status.connected {
   color: var(--sb-text-secondary);
 }
 
+/* --- SCREEN & OUTPUT TEXT COLORING --- */
 .screen {
   flex: 1;
   min-height: 0;
+  width: 100%;
   padding: 14px 18px;
   overflow-y: auto;
+  overflow-x: hidden;
   font-size: 13px;
   line-height: 1.65;
+  text-align: left;
   white-space: pre-wrap;
   word-break: break-word;
+  background: var(--sb-bg-secondary);
+  color: var(--sb-text-primary);
+  box-sizing: border-box;
   scrollbar-width: thin;
   scrollbar-color: var(--sb-border-strong) transparent;
-  scrollbar-gutter: stable;
 }
 
-.screen::-webkit-scrollbar {
-  width: 12px;
-}
-.screen::-webkit-scrollbar-track {
-  background: transparent;
-}
-.screen::-webkit-scrollbar-thumb {
-  background: var(--sb-border-strong);
-  border-radius: var(--sb-radius-pill);
-  border: 3px solid transparent;
-  background-clip: content-box;
-  transition: background var(--sb-dur-fast) var(--sb-ease);
-}
-.screen::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.38);
-  background-clip: content-box;
+/* 1. Dark Grey for System / Info Lines */
+.screen .system,
+.screen [data-kind="system"] {
+  color: var(--sb-text-tertiary, #72777d);
+  font-style: italic;
 }
 
-.line {
-  animation: fadeIn var(--sb-dur-med) var(--sb-ease);
+/* 2. Bright Red for Error Lines */
+.screen .error,
+.screen [data-kind="error"] {
+  color: var(--sb-red, #ff5252);
+  font-weight: 500;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(2px); }
-  to { opacity: 1; transform: translateY(0); }
+/* 3. Output Lines */
+.screen .output,
+.screen [data-kind="output"] {
+  color: var(--sb-text-primary);
 }
 
-.line.output { color: var(--sb-text-primary); }
-.line.system { color: var(--sb-text-tertiary); font-style: italic; }
-.line.error { color: var(--sb-red); }
-
+/* --- ACTIVE TYPING & PROMPT --- */
 .inputRow {
   display: flex;
   align-items: center;
   padding: 11px 18px 14px;
   border-top: 1px solid var(--sb-border);
+  background: var(--sb-bg-secondary);
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .prompt {
-  color: var(--sb-green);
+  color: var(--sb-green, #00e676);
   margin-right: 8px;
   white-space: pre;
-  font-weight: 590;
+  font-weight: 600;
+  text-align: left;
+  flex-shrink: 0;
 }
 
 .hiddenInput {
@@ -134,8 +153,9 @@
   background: transparent;
   border: none;
   outline: none;
-  color: var(--sb-text-primary);
   font: inherit;
   font-size: 13px;
-  caret-color: var(--sb-green);
+  text-align: left;
+  color: var(--sb-green, #00e676); /* Active input typing text in green */
+  caret-color: var(--sb-green, #00e676);
 }

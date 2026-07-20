@@ -1,176 +1,161 @@
-import { useEffect, useRef, useState } from "react";
-import "./theme.css";
+import { useEffect, useRef } from "react";
+import Editor from "@monaco-editor/react";
 import styles from "./CodeEditor.module.css";
-import Terminal from "./Terminal";
 
-// Only languages the test backend actually knows how to run without a
-// compile step. The dropdown still lists the others so the UI is ready for
-// them, the backend just replies with a clear "not wired up yet" message
-// if one of those is picked - see main.py's LANGUAGE_RUNNERS.
 const LANGUAGES = [
-  { value: "py", label: "Python" },
-  { value: "js", label: "JavaScript" },
-  { value: "java", label: "Java" },
-  { value: "c", label: "C" },
-  { value: "cpp", label: "C++" },
+  { value: "py", label: "Python", monacoLang: "python" },
+  { value: "js", label: "JavaScript", monacoLang: "javascript" },
+  { value: "java", label: "Java", monacoLang: "java" },
+  { value: "c", label: "C", monacoLang: "c" },
+  { value: "cpp", label: "C++", monacoLang: "cpp" },
 ];
 
 const DEFAULT_TEMPLATE = {
   py: 'name = input("Enter your name: ")\nprint(f"Hello, {name}!")',
   js: 'console.log("Hello world")',
-  java: 'public class Main { public static void main(String[] args) { System.out.println("Hello World"); } }',
-  c: '#include <stdio.h>\nint main() { printf("Hello World\\n"); return 0; }',
-  cpp: '#include <iostream>\nint main() { std::cout << "Hello World" << std::endl; return 0; }',
+  java: 'public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello World");\n  }\n}',
+  c: '#include <stdio.h>\n\nint main() {\n  printf("Hello World\\n");\n  return 0;\n}',
+  cpp: '#include <iostream>\n\nint main() {\n  std::cout << "Hello World" << std::endl;\n  return 0;\n}',
 };
 
-const CodeEditor = () => {
-  const [language, setLanguage] = useState("py");
-  const [code, setCode] = useState(DEFAULT_TEMPLATE.py);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+const CodeEditor = ({
+  language,
+  setLanguage,
+  code,
+  setCode,
+  isRunning,
+  isConnected,
+  onRun,
+  onStop,
+  onEditorLayoutRef,
+}) => {
+  const editorRef = useRef(null);
+  const codeAreaRef = useRef(null);
 
-  const codeRef = useRef(null);
-  const gutterRef = useRef(null);
-  const terminalRef = useRef(null);
-
-  // Swap in a fresh template whenever the language changes, same as before.
+  // Swap template when language changes
   useEffect(() => {
     setCode(DEFAULT_TEMPLATE[language]);
-  }, [language]);
+  }, [language, setCode]);
 
-  // Keep the line-number gutter's scroll position glued to the textarea's,
-  // otherwise the numbers drift out of alignment with long files.
-  const handleScroll = () => {
-    if (gutterRef.current && codeRef.current) {
-      gutterRef.current.scrollTop = codeRef.current.scrollTop;
+  // Expose the layout update function back to the parent component
+  useEffect(() => {
+    if (onEditorLayoutRef) {
+      onEditorLayoutRef.current = () => {
+        editorRef.current?.layout();
+      };
     }
-  };
+  }, [onEditorLayoutRef]);
 
-  const runHandle = (e) => {
-    e.preventDefault();
-    terminalRef.current?.run(code, language);
-  };
+  const handleEditorDidMount = (editor, monaco) => {
+    editorRef.current = editor;
 
-  const stopHandle = (e) => {
-    e.preventDefault();
-    terminalRef.current?.stop();
-  };
+    // Add Cmd/Ctrl + Enter shortcut directly into Monaco
+    editor.addAction({
+      id: "run-code-shortcut",
+      label: "Run Code",
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+      run: () => {
+        if (!isRunning) {
+          onRun();
+        }
+      },
+    });
 
-  // Two conveniences expected of a real code editor: Tab inserts spaces
-  // instead of jumping focus away, and Cmd/Ctrl+Enter runs the program
-  // without needing to reach for the mouse.
-  const handleEditorKeyDown = (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-      e.preventDefault();
-      if (!isRunning) terminalRef.current?.run(code, language);
-      return;
-    }
-
-    if (e.key === "Tab") {
-      e.preventDefault();
-      const el = e.target;
-      const { selectionStart, selectionEnd } = el;
-      const next =
-        code.slice(0, selectionStart) + "  " + code.slice(selectionEnd);
-      setCode(next);
-      requestAnimationFrame(() => {
-        el.selectionStart = el.selectionEnd = selectionStart + 2;
+    // FIX INITIAL GLITCH: Observe container until it gets non-zero dimensions on mount, then disconnect
+    if (codeAreaRef.current) {
+      const observer = new ResizeObserver(() => {
+        if (
+          codeAreaRef.current?.clientWidth > 0 &&
+          codeAreaRef.current?.clientHeight > 0
+        ) {
+          editor.layout();
+          observer.disconnect(); // Disconnect immediately so zero idle CPU is consumed
+        }
       });
+      observer.observe(codeAreaRef.current);
     }
   };
 
-  const lineNumbers = code.split("\n").map((_, i) => i + 1);
+  const currentMonacoLanguage =
+    LANGUAGES.find((lang) => lang.value === language)?.monacoLang ||
+    "plaintext";
 
   return (
-    <div className={styles.editor}>
-      <div className={styles.wrapper}>
-        {/* LEFT: code editor */}
-        <div className={styles.editorColumn}>
-          <div className={styles.codeArea}>
-            <div className={styles.gutter} ref={gutterRef}>
-              {lineNumbers.map((n) => (
-                <div key={n}>{n}</div>
-              ))}
-            </div>
-            <textarea
-              ref={codeRef}
-              className={styles.codeInput}
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              onScroll={handleScroll}
-              onKeyDown={handleEditorKeyDown}
-              spellCheck="false"
+    <div className={styles.editorColumn}>
+      <div className={styles.codeArea} ref={codeAreaRef}>
+        <Editor
+          height="100%"
+          width="100%"
+          language={currentMonacoLanguage}
+          theme="vs-dark"
+          value={code}
+          onChange={(value) => setCode(value || "")}
+          onMount={handleEditorDidMount}
+          options={{
+            readOnly: isRunning,
+            minimap: { enabled: false },
+            fontSize: 14,
+            scrollBeyondLastLine: false,
+            automaticLayout: false, // Saves CPU by turning off background polling timer
+            tabSize: 2,
+            padding: { top: 12, bottom: 12 },
+          }}
+        />
+      </div>
+
+      <div className={styles.toolbar}>
+        <div className={styles.toolbarLeft}>
+          <span
+            className={styles.statusDot}
+            data-connected={isConnected}
+            title={
+              isConnected ? "connected to backend" : "not connected to backend"
+            }
+          />
+          <div className={styles.selectWrap}>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className={styles.select}
               disabled={isRunning}
-              aria-label="Code editor"
-            />
-          </div>
-
-          <div className={styles.toolbar}>
-            <div className={styles.toolbarLeft}>
-              <span
-                className={styles.statusDot}
-                data-connected={isConnected}
-                title={
-                  isConnected
-                    ? "connected to backend"
-                    : "not connected to backend"
-                }
-              />
-              <div className={styles.selectWrap}>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className={styles.select}
-                  disabled={isRunning}
-                  aria-label="Programming language"
-                >
-                  {LANGUAGES.map((lang) => (
-                    <option key={lang.value} value={lang.value}>
-                      {lang.label}
-                    </option>
-                  ))}
-                </select>
-                <span className={styles.selectArrow}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M7 10L12 15L17 10"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-              </div>
-            </div>
-
-            <div className={styles.toolbarRight}>
-              <span className={styles.shortcutHint}>⌘/Ctrl + ⏎ to run</span>
-              <button
-                className={styles.runBtn}
-                onClick={runHandle}
-                disabled={isRunning}
-              >
-                &gt; Run
-              </button>
-              <button
-                className={styles.stopBtn}
-                onClick={stopHandle}
-                disabled={!isRunning}
-              >
-                Stop
-              </button>
-            </div>
+              aria-label="Programming language"
+            >
+              {LANGUAGES.map((lang) => (
+                <option key={lang.value} value={lang.value}>
+                  {lang.label}
+                </option>
+              ))}
+            </select>
+            <span className={styles.selectArrow}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M7 10L12 15L17 10"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
           </div>
         </div>
 
-        {/* RIGHT: the live terminal, untouched internals */}
-        <div className={styles.terminalColumn}>
-          <Terminal
-            ref={terminalRef}
-            onRunStateChange={setIsRunning}
-            onConnectionChange={setIsConnected}
-          />
+        <div className={styles.toolbarRight}>
+          <span className={styles.shortcutHint}>⌘/Ctrl + ⏎ to run</span>
+          <button
+            className={styles.runBtn}
+            onClick={onRun}
+            disabled={isRunning}
+          >
+            &gt; Run
+          </button>
+          <button
+            className={styles.stopBtn}
+            onClick={onStop}
+            disabled={!isRunning}
+          >
+            Stop
+          </button>
         </div>
       </div>
     </div>

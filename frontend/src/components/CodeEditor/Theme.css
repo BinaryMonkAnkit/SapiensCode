@@ -1,4 +1,4 @@
-/*
+/* 
   Shared design tokens for the code editor + terminal, in the style of
   Apple's platform UI: San Francisco-style system type, a restrained
   near-black/graphite palette, soft elevation, and quick, physical motion.
@@ -27,7 +27,7 @@
   --sb-text-tertiary: #6e6e73;
 
   /* Accents (Apple system colors, dark-mode values) */
-  --sb-blue: #0a84ff;
+  --sb-blue: #306699;
   --sb-green: #30d158;
   --sb-red: #ff453a;
   --sb-yellow: #ffd60a;
@@ -48,7 +48,7 @@
   --sb-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --sb-dur-fast: 120ms;
   --sb-dur-med: 220ms;
-}
+} 
 
 /*
   Neutralizes Vite's default scaffold styles (body { display: flex;
@@ -59,7 +59,7 @@
   doesn't work" symptom. Plain element selectors like these aren't scoped
   by CSS modules, so this applies globally from one import.
 */
-html, body, #root {
+ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;

@@ -7,13 +7,8 @@ import {
   useState,
 } from "react";
 import styles from "./Terminal.module.css";
+import "./theme.css";
 
-// Same backend, same protocol as the vanilla version:
-//   {"type": "keystroke", "char": "a"}
-//   {"type": "command", "line": "help"}
-//   {"type": "run_code", "code": "...", "language": "py"}
-//   {"type": "stdin", "line": "Alice"}
-//   {"type": "stop"}
 const WS_URL = "ws://localhost:8000/ws/terminal";
 
 const Terminal = forwardRef(function Terminal(
@@ -23,10 +18,12 @@ const Terminal = forwardRef(function Terminal(
   const [connected, setConnected] = useState(false);
   const [lines, setLines] = useState([
     {
+      id: "init-1",
       text: "Type a command and press Enter, or click Run to execute the program live.",
       kind: "system",
     },
     {
+      id: "init-2",
       text: "Available commands: help, time, echo <text>, clear",
       kind: "system",
     },
@@ -38,11 +35,15 @@ const Terminal = forwardRef(function Terminal(
   const screenRef = useRef(null);
   const inputRef = useRef(null);
   const reconnectTimer = useRef(null);
+  const retryCountRef = useRef(0);
   const runningRef = useRef(false);
   const pendingPromptRef = useRef("");
 
   const addLine = useCallback((text, kind = "") => {
-    setLines((prev) => [...prev, { text, kind }]);
+    setLines((prev) => [
+      ...prev,
+      { id: Date.now() + Math.random(), text, kind },
+    ]);
   }, []);
 
   const setRunning = useCallback(
@@ -66,11 +67,28 @@ const Terminal = forwardRef(function Terminal(
     return false;
   }, []);
 
-  // Only steals focus into the terminal input when that makes sense, i.e.
-  // never while the person is actively typing in the code editor.
   const focusInputIfAppropriate = useCallback(() => {
     if (document.activeElement?.tagName === "TEXTAREA") return;
     inputRef.current?.focus();
+  }, []);
+
+  const handleDisconnectRetry = useCallback(() => {
+    retryCountRef.current += 1;
+    const currentCount = retryCountRef.current;
+    const retryText = `disconnected from backend, retrying in 2s${
+      currentCount > 1 ? ` (Attempt ${currentCount})` : ""
+    }`;
+
+    setLines((prev) => {
+      const lastLine = prev[prev.length - 1];
+      if (lastLine && lastLine.isRetryLine) {
+        return [...prev.slice(0, -1), { ...lastLine, text: retryText }];
+      }
+      return [
+        ...prev,
+        { id: Date.now(), text: retryText, kind: "error", isRetryLine: true },
+      ];
+    });
   }, []);
 
   const connect = useCallback(() => {
@@ -80,13 +98,14 @@ const Terminal = forwardRef(function Terminal(
     ws.onopen = () => {
       setConnected(true);
       onConnectionChange?.(true);
+      retryCountRef.current = 0;
       addLine("connected to the backend", "system");
     };
 
     ws.onclose = () => {
       setConnected(false);
       onConnectionChange?.(false);
-      addLine("disconnected from backend, retrying in 2s", "error");
+      handleDisconnectRetry();
       reconnectTimer.current = setTimeout(connect, 2000);
     };
 
@@ -110,10 +129,6 @@ const Terminal = forwardRef(function Terminal(
       }
 
       if (msg.type === "stdout") {
-        // Split on newlines: every full line gets printed straight into the
-        // screen. Whatever is left over (no trailing newline yet) is the
-        // live prompt, e.g. "Enter your name: ", shown right next to the
-        // input box so the user can type directly into that exact spot.
         const combined = pendingPromptRef.current + msg.data;
         const parts = combined.split("\n");
         const tail = parts.pop();
@@ -137,7 +152,13 @@ const Terminal = forwardRef(function Terminal(
         if (runningRef.current) setRunning(false);
       }
     };
-  }, [addLine, focusInputIfAppropriate, onConnectionChange, setRunning]);
+  }, [
+    addLine,
+    focusInputIfAppropriate,
+    handleDisconnectRetry,
+    onConnectionChange,
+    setRunning,
+  ]);
 
   useEffect(() => {
     connect();
@@ -145,8 +166,7 @@ const Terminal = forwardRef(function Terminal(
       clearTimeout(reconnectTimer.current);
       wsRef.current?.close();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [connect]);
 
   useEffect(() => {
     screenRef.current?.scrollTo({ top: screenRef.current.scrollHeight });
@@ -181,8 +201,6 @@ const Terminal = forwardRef(function Terminal(
       const line = inputValue;
 
       if (runningRef.current) {
-        // Show exactly what the user answered, right after the prompt that
-        // was waiting for it, then hand it to the running program's stdin.
         addLine(pendingPromptRef.current + line, "output");
         sendJSON({ type: "stdin", line });
         pendingPromptRef.current = "";
@@ -199,21 +217,25 @@ const Terminal = forwardRef(function Terminal(
   return (
     <div className={styles.terminal} onClick={() => inputRef.current?.focus()}>
       <div className={styles.titlebar}>
-        <span className={`${styles.dot} ${styles.red}`} />
-        <span className={`${styles.dot} ${styles.yellow}`} />
-        <span className={`${styles.dot} ${styles.green}`} />
-        <div className={styles.title}>live-terminal</div>
+        <div className={styles.titleGroup}>
+          <span className={styles.title}>Console Output</span>
+          <span className={styles.badge}>Interactive Terminal</span>
+        </div>
+
         <div
           className={`${styles.status} ${connected ? styles.connected : ""}`}
         >
           <span className={styles.led} />
-          <span>{connected ? "connected" : "disconnected"}</span>
+          <span>{connected ? "Connected" : "Disconnected"}</span>
         </div>
       </div>
 
       <div className={styles.screen} ref={screenRef}>
-        {lines.map((line, i) => (
-          <div key={i} className={`${styles.line} ${styles[line.kind] || ""}`}>
+        {lines.map((line) => (
+          <div
+            key={line.id}
+            className={`${styles.line} ${styles[line.kind] || ""}`}
+          >
             {line.text}
           </div>
         ))}

@@ -4,9 +4,9 @@ import styles from "./MainLayout.module.css";
 import AmbientBackground from "./components/AmbientBackground";
 import SectionCard from "./components/SectionCard";
 import RightDock from "./components/RightDock";
-import CodeEditor from "../CodeEditor/CodeEditor";
 import Documentation from "../Documentation/Documentation";
 import ChatUI from "../AIchat/ChatUI";
+import CodeWorkspace from "../CodeEditor/CodeWorkspace";
 
 const SCROLL_CONFIG = {
   smoothing: 0.12, // Restores your smooth window translation glide physics
@@ -24,7 +24,7 @@ const SECTIONS = [
   {
     id: "editor",
     icon: Code,
-    content: () => <CodeEditor />,
+    content: () => <CodeWorkspace />,
   },
   {
     id: "docs",
