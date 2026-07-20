@@ -1,4 +1,4 @@
-import styles from "../MainLayout.module.css";
+import styles from "./AmbientBG.module.css";
 
 export default function AmbientBackground() {
   return (

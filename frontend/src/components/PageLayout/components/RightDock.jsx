@@ -6,7 +6,7 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
-import styles from "../MainLayout.module.css";
+import styles from "./RightDock.module.css";
 
 const DOCK_ICONS = [Sparkles, SquareCode, BookOpenText];
 const DOCK_LABELS_FALLBACK = ["Chat", "Editor", "Docs"];

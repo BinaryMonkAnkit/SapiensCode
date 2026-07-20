@@ -3,7 +3,6 @@ import { Group, Panel, Separator } from "react-resizable-panels";
 import CodeEditor from "./CodeEditor";
 import Terminal from "./Terminal";
 import styles from "./CodeWorkspace.module.css";
-import "./theme.css";
 
 const CodeWorkspace = () => {
   const [language, setLanguage] = useState("py");
@@ -50,7 +49,7 @@ const CodeWorkspace = () => {
   };
 
   return (
-    <div className={styles.workspace}>
+    <div className={`${styles.workspace} workspace`}>
       <div className={styles.wrapper}>
         <Group
           key={isMobile ? "vertical-mode" : "horizontal-mode"} // KEY force-remounts component tree during switch to prevent layout bug

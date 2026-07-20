@@ -1,0 +1,129 @@
+/* src/styles/tokens.css */
+
+/* Dark Theme Tokens (Default) */
+:root,
+[data-theme="dark"],
+.dark-theme {
+  /* Canvas & Base Text */
+  --bg-app: #0d0e12;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.65);
+
+  /* Glass Cards */
+  --card-bg: rgba(255, 255, 255, 0.035);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --card-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+
+  /* Right Dock */
+  --dock-bg: rgba(13, 14, 18, 0.7);
+  --dock-border: rgba(255, 255, 255, 0.08);
+  --dock-icon-idle: rgba(255, 255, 255, 0.45);
+  --dock-icon-hover: rgba(255, 255, 255, 0.9);
+  --dock-accent: #f4f4f5;
+  --dock-accent-glow: rgba(244, 244, 245, 0.85);
+  --dock-tooltip-bg: #18181b;
+  --dock-tooltip-fg: #f4f4f5;
+
+  /* Toggle Button */
+  --toggle-btn-border: rgba(255, 255, 255, 0.2);
+  --toggle-btn-bg: rgba(255, 255, 255, 0.05);
+  --toggle-btn-fg: #fbbf24;
+
+  /* Ambient Glows */
+  --glow-1: rgba(30, 58, 138, 0.35);
+  --glow-2: rgba(88, 28, 135, 0.3);
+}
+
+/* Light Theme Tokens */
+[data-theme="light"],
+.light-theme {
+  /* Canvas & Base Text */
+  --bg-app: #4e4e4e;
+  --text-primary: #111827;
+  --text-secondary: rgba(17, 24, 39, 0.65);
+
+  /* Glass Cards */
+  --card-bg: rgba(255, 255, 255, 0.55);
+  --card-border: rgba(255, 255, 255, 0.8);
+  --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+
+  /* Right Dock */
+  --dock-bg: rgba(238, 242, 246, 0.7);
+  --dock-border: rgba(0, 0, 0, 0.06);
+  --dock-icon-idle: rgba(17, 24, 39, 0.4);
+  --dock-icon-hover: rgba(17, 24, 39, 0.85);
+  --dock-accent: #334155;
+  --dock-accent-glow: rgba(51, 65, 85, 0.6);
+  --dock-tooltip-bg: #1e293b;
+  --dock-tooltip-fg: #f8fafc;
+
+  /* Toggle Button */
+  --toggle-btn-border: rgba(0, 0, 0, 0.15);
+  --toggle-btn-bg: rgba(0, 0, 0, 0.03);
+  --toggle-btn-fg: #1e293b;
+
+  /* Ambient Glows */
+  --glow-1: rgba(147, 197, 253, 0.45);
+  --glow-2: rgba(216, 180, 254, 0.4);
+}
+
+
+
+
+
+
+
+
+/* ==========================================================================
+   2. CODE EDITOR & TERMINAL TOKENS
+   ========================================================================== */
+
+.workspace {
+  /* Type */
+  --sb-font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif;
+  --sb-font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Surfaces */
+  --sb-page-bg: #0b0b0d;
+  --sb-bg-primary: #1c1c1e;
+  --sb-bg-secondary: #232325;
+  --sb-bg-tertiary: #2c2c2e;
+  --sb-bg-elevated: rgba(28, 28, 30, 0.72);
+  --sb-border: rgba(255, 255, 255, 0.09);
+  --sb-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Text */
+  --sb-text-primary: #f5f5f7;
+  --sb-text-secondary: #a1a1a6;
+  --sb-text-tertiary: #6e6e73;
+
+  /* Accents */
+  --sb-blue: #306699;
+  --sb-green: #30d158;
+  --sb-red: #ff453a;
+  --sb-yellow: #ffd60a;
+
+  /* Shape */
+  --sb-radius-sm: 4px;
+  --sb-radius-md: 12px;
+  --sb-radius-lg: 20px;
+  --sb-radius-pill: 999px;
+
+  /* Elevation */
+  --sb-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --sb-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --sb-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.5);
+
+  /* Motion */
+  --sb-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --sb-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --sb-dur-fast: 120ms;
+  --sb-dur-med: 220ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace *, .workspace *::before, .workspace *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

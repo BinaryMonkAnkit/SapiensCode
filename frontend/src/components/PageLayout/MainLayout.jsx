@@ -9,10 +9,10 @@ import ChatUI from "../AIchat/ChatUI";
 import CodeWorkspace from "../CodeEditor/CodeWorkspace";
 
 const SCROLL_CONFIG = {
-  smoothing: 0.12, // Restores your smooth window translation glide physics
+  smoothing: 0.12, // Restores smooth window translation glide physics
   restThreshold: 0.005,
   sectionChangeCooldown: 700, // Disables rapid trackpad swiping completely
-  innerScrollLeakyDelay: 350, // MS to wait AFTER hitting an inner container's boundary before allowing a section change
+  innerScrollLeakyDelay: 350, // MS to wait AFTER hitting an inner container boundary before allowing a section change
 };
 
 const SECTIONS = [
@@ -53,7 +53,7 @@ export default function MainLayout() {
   const maxIndex = SECTIONS.length - 1;
   const clampIndex = (value) => clamp(value, 0, maxIndex);
 
-  // --- 1. RESTORED PHYSICS ENGINE FOR THE WINDOW ANIMATIONS ---
+  // --- 1. PHYSICS ENGINE FOR WINDOW ANIMATIONS ---
   const runPhysics = () => {
     const diff = targetRef.current - currentRef.current;
 
@@ -112,7 +112,7 @@ export default function MainLayout() {
     let globalScrollTimeout = null;
 
     const handleWheel = (e) => {
-      // --- SAFETY CHECK: Always clear any stuck states if the user stops scrolling for a moment ---
+      // Safety check: Always clear any stuck states if the user stops scrolling for a moment
       clearTimeout(globalScrollTimeout);
       globalScrollTimeout = setTimeout(() => {
         innerScrollCooldownRef.current = false;
@@ -138,8 +138,8 @@ export default function MainLayout() {
           clearTimeout(innerScrollTimeoutRef.current);
           return;
         } else {
-          // Just hit the inner boundaries. Keep blocking main section changes
-          // to swallow remaining high-velocity trackpad momentum ticks.
+          // Just hit the inner boundaries. Block section changes
+          // to absorb high-velocity trackpad momentum ticks.
           if (innerScrollCooldownRef.current) {
             clearTimeout(innerScrollTimeoutRef.current);
             innerScrollTimeoutRef.current = setTimeout(() => {
@@ -152,13 +152,12 @@ export default function MainLayout() {
         }
       }
 
-      // Stop the background page context from bouncing/moving natively
+      // Stop default page bouncing behavior
       e.preventDefault();
 
-      // If a legitimate lock is in place, exit early safely
       if (isTransitioningRef.current || innerScrollCooldownRef.current) return;
 
-      // Intentional layout swipe action threshold check
+      // Section swipe trigger
       if (Math.abs(e.deltaY) > 18) {
         const direction = e.deltaY > 0 ? 1 : -1;
         changeSection(Math.round(targetRef.current) + direction);
@@ -177,7 +176,8 @@ export default function MainLayout() {
 
   return (
     <div
-      className={`${styles["glass-wrapper"]} ${isDarkMode ? styles["dark-theme"] : styles["light-theme"]}`}
+      className={styles["glass-wrapper"]}
+      data-theme={isDarkMode ? "dark" : "light"}
     >
       <svg className={styles["svg-filter-hidden"]}>
         <filter id="glass-grain">

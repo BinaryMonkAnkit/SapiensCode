@@ -1,4 +1,4 @@
-import styles from "../MainLayout.module.css";
+import styles from "./SectionCard.module.css";
 
 export default function SectionCard({ section, progress, index }) {
   const offset = index - progress;
