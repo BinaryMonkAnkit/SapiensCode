@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { SendHorizontal } from "lucide-react";
+import styles from "./PromptBarIcons.module.css";
 
 export default function PromptBarIcons({
   onVoice,
@@ -11,13 +12,14 @@ export default function PromptBarIcons({
   const micRef = useRef(null);
   const sendRef = useRef(null);
 
+  // Updated to use the scoped CSS module class safely
   function triggerFog(elRef) {
     const el = elRef.current;
     if (!el) return;
-    el.classList.remove("fog-animate");
-    void el.offsetWidth;
-    el.classList.add("fog-animate");
-    window.setTimeout(() => el.classList.remove("fog-animate"), 900);
+    el.classList.remove(styles.fogAnimate);
+    void el.offsetWidth; // Force reflow
+    el.classList.add(styles.fogAnimate);
+    window.setTimeout(() => el.classList.remove(styles.fogAnimate), 900);
   }
 
   function handleVoice() {
@@ -32,10 +34,9 @@ export default function PromptBarIcons({
 
   return (
     <div
-      className={
-        "icon-capsule icon-capsule-horizontal" +
-        (fullWidth ? " icon-capsule-full" : "")
-      }
+      className={`${styles.iconCapsule} ${styles.iconCapsuleHorizontal} ${
+        fullWidth ? styles.iconCapsuleFull : ""
+      }`}
       aria-hidden={false}
       style={{ justifyContent: fullWidth ? "space-between" : "flex-end" }}
     >
@@ -44,7 +45,9 @@ export default function PromptBarIcons({
         type="button"
         onClick={handleVoice}
         aria-label={isListening ? "Stop Voice Listening" : "Voice Input"}
-        className={`capsule-btn mic-btn ${isListening ? "mic-listening" : ""}`}
+        className={`${styles.capsuleBtn} ${styles.micBtn} ${
+          isListening ? styles.micListening : ""
+        }`}
       >
         <svg
           viewBox="0 0 24 24"
@@ -57,16 +60,16 @@ export default function PromptBarIcons({
         </svg>
       </button>
 
-      <div className="capsule-divider" />
+      <div className={styles.capsuleDivider} />
 
       <button
         ref={sendRef}
         type="button"
         onClick={handleSend}
         aria-label="Send"
-        className={
-          "capsule-btn send-btn " + (isDark ? "send-dark" : "send-light")
-        }
+        className={`${styles.capsuleBtn} ${styles.sendBtn} ${
+          isDark ? styles.sendDark : styles.sendLight
+        }`}
       >
         <SendHorizontal className="w-5 h-5" />
       </button>

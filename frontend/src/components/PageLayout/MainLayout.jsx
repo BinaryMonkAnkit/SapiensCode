@@ -9,9 +9,7 @@ import ChatUI from "../AIchat/ChatUI";
 import CodeWorkspace from "../CodeEditor/CodeWorkspace";
 
 const SCROLL_CONFIG = {
-  smoothing: 0.12, // Restores smooth window translation glide physics
-  restThreshold: 0.005,
-  sectionChangeCooldown: 700, // Disables rapid trackpad swiping completely
+  sectionChangeCooldown: 700, // Blocks rapid trackpad swiping across sections
   innerScrollLeakyDelay: 350, // MS to wait AFTER hitting an inner container boundary before allowing a section change
 };
 
@@ -24,12 +22,12 @@ const SECTIONS = [
   {
     id: "editor",
     icon: Code,
-    content: () => <CodeWorkspace />,
+    content: (isDarkMode) => <CodeWorkspace isDarkMode={isDarkMode} />,
   },
   {
     id: "docs",
     icon: FileText,
-    content: () => <Documentation />,
+    content: (isDarkMode) => <Documentation isDarkMode={isDarkMode} />,
     hideChrome: true,
   },
 ];
@@ -39,11 +37,6 @@ const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 export default function MainLayout() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [progress, setProgress] = useState(0);
-
-  const targetRef = useRef(0);
-  const currentRef = useRef(0);
-  const rafRef = useRef(null);
 
   const isTransitioningRef = useRef(false);
   const innerScrollCooldownRef = useRef(false);
@@ -53,39 +46,23 @@ export default function MainLayout() {
   const maxIndex = SECTIONS.length - 1;
   const clampIndex = (value) => clamp(value, 0, maxIndex);
 
-  // --- 1. PHYSICS ENGINE FOR WINDOW ANIMATIONS ---
-  const runPhysics = () => {
-    const diff = targetRef.current - currentRef.current;
-
-    if (Math.abs(diff) > SCROLL_CONFIG.restThreshold) {
-      currentRef.current += diff * SCROLL_CONFIG.smoothing;
-      rafRef.current = requestAnimationFrame(runPhysics);
-    } else {
-      currentRef.current = targetRef.current;
-      rafRef.current = null;
-    }
-
-    setProgress(currentRef.current);
-    setActiveIdx(Math.round(currentRef.current));
-  };
-
-  const startPhysics = () => {
-    if (!rafRef.current) {
-      rafRef.current = requestAnimationFrame(runPhysics);
-    }
-  };
-
+  // No RAF/lerp loop here anymore. Each step just moves activeIdx by
+  // one whole section; SectionCard's own CSS transition (see its
+  // .module.css) animates the transform/opacity/blur smoothly on the
+  // compositor, so React only re-renders once per section change
+  // instead of once per frame.
   const changeSection = (nextIndex) => {
     const target = clampIndex(nextIndex);
-    if (target === targetRef.current) return;
+    setActiveIdx((current) => {
+      if (target === current) return current;
 
-    targetRef.current = target;
-    startPhysics();
+      isTransitioningRef.current = true;
+      setTimeout(() => {
+        isTransitioningRef.current = false;
+      }, SCROLL_CONFIG.sectionChangeCooldown);
 
-    isTransitioningRef.current = true;
-    setTimeout(() => {
-      isTransitioningRef.current = false;
-    }, SCROLL_CONFIG.sectionChangeCooldown);
+      return target;
+    });
   };
 
   const goToSection = (index) => {
@@ -112,7 +89,7 @@ export default function MainLayout() {
     let globalScrollTimeout = null;
 
     const handleWheel = (e) => {
-      // Safety check: Always clear any stuck states if the user stops scrolling for a moment
+      // Safety check: always clear any stuck states if the user stops scrolling for a moment
       clearTimeout(globalScrollTimeout);
       globalScrollTimeout = setTimeout(() => {
         innerScrollCooldownRef.current = false;
@@ -139,7 +116,7 @@ export default function MainLayout() {
           return;
         } else {
           // Just hit the inner boundaries. Block section changes
-          // to absorb high-velocity trackpad momentum ticks.
+          // to absorb high velocity trackpad momentum ticks.
           if (innerScrollCooldownRef.current) {
             clearTimeout(innerScrollTimeoutRef.current);
             innerScrollTimeoutRef.current = setTimeout(() => {
@@ -160,7 +137,7 @@ export default function MainLayout() {
       // Section swipe trigger
       if (Math.abs(e.deltaY) > 18) {
         const direction = e.deltaY > 0 ? 1 : -1;
-        changeSection(Math.round(targetRef.current) + direction);
+        changeSection(activeIdx + direction);
       }
     };
 
@@ -168,18 +145,17 @@ export default function MainLayout() {
 
     return () => {
       window.removeEventListener("wheel", handleWheel);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
       clearTimeout(innerScrollTimeoutRef.current);
       clearTimeout(globalScrollTimeout);
     };
-  }, []);
+  }, [activeIdx]);
 
   return (
     <div
       className={styles["glass-wrapper"]}
       data-theme={isDarkMode ? "dark" : "light"}
     >
-      <svg className={styles["svg-filter-hidden"]}>
+      {/* <svg className={styles["svg-filter-hidden"]}>
         <filter id="glass-grain">
           <feTurbulence
             type="fractalNoise"
@@ -189,7 +165,7 @@ export default function MainLayout() {
           />
           <feColorMatrix type="saturate" values="0" />
         </filter>
-      </svg>
+      </svg> */}
 
       <AmbientBackground />
 
@@ -201,14 +177,14 @@ export default function MainLayout() {
               ...section,
               content: section.content(isDarkMode),
             }}
-            progress={progress}
+            progress={activeIdx}
             index={idx}
           />
         ))}
       </main>
 
       <RightDock
-        progress={progress}
+        progress={activeIdx}
         activeIdx={activeIdx}
         sections={SECTIONS}
         onDotClick={goToSection}

@@ -4,11 +4,13 @@ import CodeEditor from "./CodeEditor";
 import Terminal from "./Terminal";
 import styles from "./CodeWorkspace.module.css";
 
-const CodeWorkspace = () => {
+const CodeWorkspace = ({ isDarkMode }) => {
   const [language, setLanguage] = useState("py");
   const [code, setCode] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+
+  console.log(`This is CodeWorkspace, and isDarkMode value is: ${isDarkMode}`);
 
   // Responsive layout state
   const [isMobile, setIsMobile] = useState(false);
@@ -60,11 +62,12 @@ const CodeWorkspace = () => {
         >
           {/* EDITOR PANEL */}
           <Panel
-            defaultSize={50}
+            defaultSize={60}
             minSize={20}
-            style={{ display: "flex", flexDirection: "column" }}
+            // style={{ display: "flex", flexDirection: "column" }}
           >
             <CodeEditor
+              isDarkMode={isDarkMode}
               language={language}
               setLanguage={setLanguage}
               code={code}
@@ -88,6 +91,7 @@ const CodeWorkspace = () => {
           >
             <div className={styles.terminalColumn}>
               <Terminal
+                isDarkMode={isDarkMode}
                 ref={terminalRef}
                 onRunStateChange={setIsRunning}
                 onConnectionChange={setIsConnected}

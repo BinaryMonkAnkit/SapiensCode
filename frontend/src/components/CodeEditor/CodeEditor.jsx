@@ -1,14 +1,12 @@
 import { useEffect, useRef } from "react";
 import Editor from "@monaco-editor/react";
+import "../../styles/tokens.css";
 import styles from "./CodeEditor.module.css";
-
-const LANGUAGES = [
-  { value: "py", label: "Python", monacoLang: "python" },
-  { value: "js", label: "JavaScript", monacoLang: "javascript" },
-  { value: "java", label: "Java", monacoLang: "java" },
-  { value: "c", label: "C", monacoLang: "c" },
-  { value: "cpp", label: "C++", monacoLang: "cpp" },
-];
+import EditorToolbar, { LANGUAGES } from "./EditorToolbar";
+import {
+  handleEditorBeforeMount,
+  createEditorMountHandler,
+} from "./editorHandlers";
 
 const DEFAULT_TEMPLATE = {
   py: 'name = input("Enter your name: ")\nprint(f"Hello, {name}!")',
@@ -19,6 +17,7 @@ const DEFAULT_TEMPLATE = {
 };
 
 const CodeEditor = ({
+  isDarkMode,
   language,
   setLanguage,
   code,
@@ -32,9 +31,13 @@ const CodeEditor = ({
   const editorRef = useRef(null);
   const codeAreaRef = useRef(null);
 
+  console.log(`This is CodeEditor, and isDarkMode value is: ${isDarkMode}`);
+
   // Swap template when language changes
   useEffect(() => {
-    setCode(DEFAULT_TEMPLATE[language]);
+    if (DEFAULT_TEMPLATE[language]) {
+      setCode(DEFAULT_TEMPLATE[language]);
+    }
   }, [language, setCode]);
 
   // Expose the layout update function back to the parent component
@@ -46,38 +49,17 @@ const CodeEditor = ({
     }
   }, [onEditorLayoutRef]);
 
-  const handleEditorDidMount = (editor, monaco) => {
-    editorRef.current = editor;
+  //handler
+  const handleEditorDidMount = createEditorMountHandler({
+    editorRef,
+    codeAreaRef,
+    isRunning,
+    onRun,
+  });
 
-    // Add Cmd/Ctrl + Enter shortcut directly into Monaco
-    editor.addAction({
-      id: "run-code-shortcut",
-      label: "Run Code",
-      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
-      run: () => {
-        if (!isRunning) {
-          onRun();
-        }
-      },
-    });
-
-    // FIX INITIAL GLITCH: Observe container until it gets non-zero dimensions on mount, then disconnect
-    if (codeAreaRef.current) {
-      const observer = new ResizeObserver(() => {
-        if (
-          codeAreaRef.current?.clientWidth > 0 &&
-          codeAreaRef.current?.clientHeight > 0
-        ) {
-          editor.layout();
-          observer.disconnect(); // Disconnect immediately so zero idle CPU is consumed
-        }
-      });
-      observer.observe(codeAreaRef.current);
-    }
-  };
-
+  // Safe optional chaining fallback
   const currentMonacoLanguage =
-    LANGUAGES.find((lang) => lang.value === language)?.monacoLang ||
+    LANGUAGES?.find((lang) => lang.value === language)?.monacoLang ||
     "plaintext";
 
   return (
@@ -87,77 +69,34 @@ const CodeEditor = ({
           height="100%"
           width="100%"
           language={currentMonacoLanguage}
-          theme="vs-dark"
+          theme={isDarkMode ? "glass-dark" : "glass-light"}
           value={code}
           onChange={(value) => setCode(value || "")}
+          beforeMount={handleEditorBeforeMount}
           onMount={handleEditorDidMount}
           options={{
             readOnly: isRunning,
             minimap: { enabled: false },
             fontSize: 14,
             scrollBeyondLastLine: false,
-            automaticLayout: false, // Saves CPU by turning off background polling timer
+            automaticLayout: false,
             tabSize: 2,
             padding: { top: 12, bottom: 12 },
+            wordWrap: "on",
+            wrappingIndent: "indent",
           }}
         />
       </div>
 
-      <div className={styles.toolbar}>
-        <div className={styles.toolbarLeft}>
-          <span
-            className={styles.statusDot}
-            data-connected={isConnected}
-            title={
-              isConnected ? "connected to backend" : "not connected to backend"
-            }
-          />
-          <div className={styles.selectWrap}>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className={styles.select}
-              disabled={isRunning}
-              aria-label="Programming language"
-            >
-              {LANGUAGES.map((lang) => (
-                <option key={lang.value} value={lang.value}>
-                  {lang.label}
-                </option>
-              ))}
-            </select>
-            <span className={styles.selectArrow}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M7 10L12 15L17 10"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-          </div>
-        </div>
-
-        <div className={styles.toolbarRight}>
-          <span className={styles.shortcutHint}>⌘/Ctrl + ⏎ to run</span>
-          <button
-            className={styles.runBtn}
-            onClick={onRun}
-            disabled={isRunning}
-          >
-            &gt; Run
-          </button>
-          <button
-            className={styles.stopBtn}
-            onClick={onStop}
-            disabled={!isRunning}
-          >
-            Stop
-          </button>
-        </div>
-      </div>
+      <EditorToolbar
+        isDarkMode={isDarkMode}
+        language={language}
+        setLanguage={setLanguage}
+        isRunning={isRunning}
+        isConnected={isConnected}
+        onRun={onRun}
+        onStop={onStop}
+      />
     </div>
   );
 };

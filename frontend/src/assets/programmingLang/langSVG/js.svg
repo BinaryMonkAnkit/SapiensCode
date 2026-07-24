@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" id="js-terminal-card">
+  <!-- Terminal Card Outer Border -->
+  <rect x="14" y="14" width="100" height="100" rx="16" fill="none" stroke="currentColor" stroke-width="3" />
+  <!-- Divider Line for Window Header -->
+  <line x1="14" y1="38" x2="114" y2="38" stroke="currentColor" stroke-width="2" opacity="0.5" />
+  <!-- Window Control Dots -->
+  <circle cx="28" cy="26" r="3" fill="currentColor" />
+  <circle cx="38" cy="26" r="3" fill="currentColor" />
+  <circle cx="48" cy="26" r="3" fill="currentColor" />
+
+  <!-- Centered Bold JS Monogram -->
+  <g fill="currentColor">
+    <!-- J -->
+    <path d="M 44 54 H 54 V 82 C 54 88.6 48.6 94 42 94 C 35.4 94 30 88.6 30 82 H 38 C 38 84.2 39.8 86 42 86 C 44.2 86 46 84.2 46 82 V 54 Z" />
+    <!-- S -->
+    <path d="M 88 62 C 88 56.5 82.5 52 76 52 C 69.5 52 64 56.5 64 62 C 64 71 88 68 88 78 C 88 83.5 82.5 88 76 88 C 69.5 88 64 83.5 64 78 H 72 C 72 79.1 73.8 81 76 81 C 78.2 81 80 79.1 80 78 C 80 71 56 72 56 62 C 56 53.5 65 45 76 45 C 87 45 96 53.5 96 62 H 88 Z" />
+  </g>
+</svg>

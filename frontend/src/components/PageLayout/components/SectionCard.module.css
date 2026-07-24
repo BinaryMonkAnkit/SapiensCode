@@ -14,7 +14,19 @@
   border: 1px solid var(--card-border);
   box-shadow: var(--card-shadow);
   will-change: transform, opacity;
-  transition: border-color 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease;
+
+  /* transform/opacity/filter now animate here instead of being
+     recomputed every frame in JS. activeIdx changes once per
+     section, and the browser tweens between old and new inline
+     style values on the compositor thread. */
+  transition:
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.5s ease,
+    backdrop-filter 0.5s ease,
+    -webkit-backdrop-filter 0.5s ease,
+    border-color 0.4s ease,
+    background-color 0.4s ease,
+    box-shadow 0.4s ease;
 }
 
 .specular-edge {

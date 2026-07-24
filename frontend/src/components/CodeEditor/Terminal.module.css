@@ -8,10 +8,15 @@
   display: flex;
   flex-direction: column;
   background: var(--sb-bg-secondary);
-  font-family: var(--sb-font-mono);
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Consolas', 'Ubuntu Mono', monospace;
+  font-variant-ligatures: normal; /* Enables or disables coding ligatures */
+  -webkit-font-smoothing: antialiased; /* Smoother rendering on macOS */
+  -moz-osx-font-smoothing: grayscale;
   color: var(--sb-text-primary);
   box-sizing: border-box;
   overflow: hidden;
+  border-left: 1px solid var(--sb-border);
+
 }
 
 /* --- REVERTED TOP TITLEBAR TO ORIGINAL DESIGN --- */
@@ -130,12 +135,15 @@
 .inputRow {
   display: flex;
   align-items: center;
-  padding: 11px 18px 14px;
+  padding: 11.5px 18px 14px;
   border-top: 1px solid var(--sb-border);
   background: var(--sb-bg-secondary);
   flex-shrink: 0;
   width: 100%;
   box-sizing: border-box;
+  border: 1px solid var(--sb-border);
+  border-left: 0;
+
 }
 
 .prompt {

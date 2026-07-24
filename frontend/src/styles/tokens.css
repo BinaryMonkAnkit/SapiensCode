@@ -1,9 +1,13 @@
 /* src/styles/tokens.css */
 
-/* Dark Theme Tokens (Default) */
+/* ==========================================================================
+   1. GLOBAL DARK THEME (DEFAULT)
+   ========================================================================== */
 :root,
 [data-theme="dark"],
 .dark-theme {
+  --sb-font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif;
+
   /* Canvas & Base Text */
   --bg-app: #0d0e12;
   --text-primary: #ffffff;
@@ -32,11 +36,29 @@
   /* Ambient Glows */
   --glow-1: rgba(30, 58, 138, 0.35);
   --glow-2: rgba(88, 28, 135, 0.3);
+
+  /* Language Selector Tokens (Moved from .selectWrap so Portals can read them) */
+  --glass-bg: rgba(233, 233, 235, 0.6);
+  --glass-bg-hover: rgba(64, 64, 68, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.22);
+  --glass-border-focus: rgba(10, 132, 255, 0.7);
+  --glass-text: #f2f2f2;
+  --glass-menu-bg: rgba(38, 38, 40, 0.85);
+  --glass-option-hover: rgba(255, 255, 255, 0.1);
+  --glass-option-active-bg: rgba(255, 255, 255, 0.1);
+  --glass-active-text: #ffffff;
+  --glass-active-dot: #ffffff;
+  --glass-active-dot-glow: rgba(255, 255, 255, 0.7);
+  --glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-/* Light Theme Tokens */
+/* ==========================================================================
+   2. GLOBAL LIGHT THEME
+   ========================================================================== */
 [data-theme="light"],
 .light-theme {
+  --sb-font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif;
+
   /* Canvas & Base Text */
   --bg-app: #4e4e4e;
   --text-primary: #111827;
@@ -65,24 +87,33 @@
   /* Ambient Glows */
   --glow-1: rgba(147, 197, 253, 0.45);
   --glow-2: rgba(216, 180, 254, 0.4);
+
+  /* Language Selector Tokens */
+  --glass-bg: rgba(241, 234, 234, 0.65);
+  --glass-bg-hover: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.18);
+  --glass-border-focus: rgba(0, 122, 255, 0.65);
+  --glass-text: #1d1d1f;
+  --glass-menu-bg: rgba(255, 255, 255, 0.82);
+  --glass-option-hover: rgba(0, 0, 0, 0.08);
+  --glass-option-active-bg: rgba(0, 0, 0, 0.08);
+  --glass-active-text: #000000;
+  --glass-active-dot: #000000;
+  --glass-active-dot-glow: rgba(0, 0, 0, 0.5);
+  --glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-
-
-
-
-
-
-
 /* ==========================================================================
-   2. CODE EDITOR & TERMINAL TOKENS
+   3. CODE EDITOR & TERMINAL TOKENS
    ========================================================================== */
 
-.workspace {
-  /* Type */
-  --sb-font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif;
-  --sb-font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
 
+/* Dark Theme Workspace Tokens (Default - Original Values Preserved) */
+:root,
+[data-theme="dark"],
+[data-theme="dark"] .workspace,
+.dark-theme,
+.workspace {
   /* Surfaces */
   --sb-page-bg: #0b0b0d;
   --sb-bg-primary: #1c1c1e;
@@ -103,26 +134,56 @@
   --sb-red: #ff453a;
   --sb-yellow: #ffd60a;
 
-  /* Shape */
-  --sb-radius-sm: 4px;
-  --sb-radius-md: 12px;
-  --sb-radius-lg: 20px;
-  --sb-radius-pill: 999px;
-
   /* Elevation */
   --sb-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --sb-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
   --sb-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.5);
+}
 
-  /* Motion */
-  --sb-ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --sb-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --sb-dur-fast: 120ms;
-  --sb-dur-med: 220ms;
+/* Light Theme Workspace Tokens (Added) */
+[data-theme="light"],
+[data-theme="light"] .workspace,
+.light-theme,
+.light-theme .workspace {
+  /* Surfaces */
+  --sb-page-bg: #f8f9fa;
+  --sb-bg-primary: #ffffff;
+  --sb-bg-secondary: #f1f3f5;
+  --sb-bg-tertiary: #e9ecef;
+  --sb-bg-elevated: rgba(255, 255, 255, 0.85);
+  --sb-border: rgba(0, 0, 0, 0.08);
+  --sb-border-strong: rgba(0, 0, 0, 0.16);
+
+  /* Text */
+  --sb-text-primary: #1c1c1e;
+  --sb-text-secondary: #6e6e73;
+  --sb-text-tertiary: #8e8e93;
+
+  /* Accents */
+  --sb-blue: #0066cc;
+  --sb-green: #28a745;
+  --sb-red: #dc3545;
+  --sb-yellow: #d97706;
+
+  /* Elevation */
+  --sb-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --sb-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --sb-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.12);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .workspace *, .workspace *::before, .workspace *::after {
+  .workspace *,
+  .workspace *::before,
+  .workspace *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace *,
+  .workspace *::before,
+  .workspace *::after {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }

@@ -7,14 +7,15 @@ import {
   useState,
 } from "react";
 import styles from "./Terminal.module.css";
-import "./theme.css";
 
 const WS_URL = "ws://localhost:8000/ws/terminal";
 
 const Terminal = forwardRef(function Terminal(
-  { onRunStateChange, onConnectionChange },
+  { onRunStateChange, onConnectionChange, isDarkMode },
   ref,
 ) {
+  console.log(`This is Terminal, and isDarkMode value is: ${isDarkMode}`);
+
   const [connected, setConnected] = useState(false);
   const [lines, setLines] = useState([
     {
@@ -215,7 +216,11 @@ const Terminal = forwardRef(function Terminal(
   };
 
   return (
-    <div className={styles.terminal} onClick={() => inputRef.current?.focus()}>
+    <div
+      className={styles.terminal}
+      data-theme={isDarkMode ? "dark" : "light"}
+      onClick={() => inputRef.current?.focus()}
+    >
       <div className={styles.titlebar}>
         <div className={styles.titleGroup}>
           <span className={styles.title}>Console Output</span>
