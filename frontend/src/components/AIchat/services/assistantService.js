@@ -49,7 +49,7 @@ export async function streamChatAssistant(payload, onChunkReceived, onStreamComp
   } catch (error) {
     console.error("Streaming error:", error);
     // Display the error directly inside your chat UI bubble so you know what went wrong
-    onChunkReceived(`\n\n❌ **Error:** Failed to connect to server. Please verify your FastAPI backend is running.`);
+    onChunkReceived(`\n\n❌ **Error:** Failed to connect to server.`);
   } finally {
     // 🔍 THE FIX: This block ALWAYS runs, even if the code crashes or catches an error.
     if (onStreamComplete) onStreamComplete();

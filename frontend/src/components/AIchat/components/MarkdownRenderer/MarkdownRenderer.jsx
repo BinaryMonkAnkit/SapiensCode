@@ -2,7 +2,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import CodeBlock from "./CodeBlock";
-import styles from "../../ChatUI.module.css";
+import styles from "./MarkdownRenderer.module.css";
 
 export default function MarkdownRenderer({ content, isDarkMode }) {
   return (

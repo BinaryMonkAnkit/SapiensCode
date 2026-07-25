@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Copy, Edit3, Check } from "lucide-react";
 import MarkdownRenderer from "../MarkdownRenderer/MarkdownRenderer";
 import MessageEditor from "../MessageEditor/MessageEditor";
-import styles from "../../ChatUI.module.css";
+import styles from "./ChatMessage.module.css";
 
 export default function ChatMessage({
   msg,

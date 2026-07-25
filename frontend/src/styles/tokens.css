@@ -50,6 +50,46 @@
   --glass-active-dot: #ffffff;
   --glass-active-dot-glow: rgba(255, 255, 255, 0.7);
   --glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.35);
+
+  /*Chat UI tokens*/
+   --chat-text-main: rgba(255, 255, 255, 0.94);
+  --chat-text-muted: rgba(255, 255, 255, 0.45);
+  --chat-border: rgba(255, 255, 255, 0.07);
+  --user-bubble-bg: rgba(255, 255, 255, 0.04);
+  --user-bubble-border: rgba(255, 255, 255, 0.06);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.14);
+  --claude-edit-border: rgba(255, 255, 255, 0.15);
+  --claude-btn-hover: rgba(255, 255, 255, 0.06);
+  --claude-btn-resend-bg:#e2e8f0;
+  --claude-btn-resend-hover:#f1f5f9;
+  --claude-btn-text-color:#0f172a;
+
+
+  /* Chat UI Markdown variables
+  /* Radius */
+  --mrk-radius: 14px;
+  --mrk-radius-sm: 10px;
+
+  /* Blur */
+  --mrk-blur: blur(22px) saturate(180%);
+  --mrk-blur-webkit: blur(22px) saturate(180%);
+
+  /* Animation */
+  --mrk-transition: 180ms ease;
+
+  --mrk-code-bg: rgba(26, 27, 32, 0.68);
+  --mrk-code-header-bg: rgba(36, 38, 45, 0.72);
+
+  --mrk-border: rgba(255,255,255,.08);
+
+  --mrk-text: #ECECEC;
+  --mrk-text-muted: rgba(255,255,255,.62);
+
+  --mrk-hover: rgba(255,255,255,.08);
+
+  --mrk-inline-bg: rgba(255,255,255,.08);
+
+
 }
 
 /* ==========================================================================
@@ -101,6 +141,34 @@
   --glass-active-dot: #000000;
   --glass-active-dot-glow: rgba(0, 0, 0, 0.5);
   --glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.08);
+
+  /* ChatUI tokens*/
+   --chat-text-main: #1d1d1f;
+  --chat-text-muted: rgba(0, 0, 0, 0.5);
+  --chat-border: rgba(0, 0, 0, 0.07);
+  --user-bubble-bg: rgba(0, 0, 0, 0.03);
+  --user-bubble-border: rgba(0, 0, 0, 0.05);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+  --claude-edit-border: rgba(0, 0, 0, 0.15);
+  --claude-btn-hover: rgba(0, 0, 0, 0.04);
+  --claude-btn-resend-bg:#111111;
+  --claude-btn-resend-hover:#222222;
+  --claude-btn-text-color:#ffffff;
+
+  /* ChatUI markdown tokens*/
+  
+  --mrk-code-bg: rgba(255,255,255,.62);
+  --mrk-code-header-bg: rgba(246,247,249,.74);
+
+  --mrk-border: rgba(0,0,0,.08);
+
+  --mrk-text: #23262D;
+  --mrk-text-muted: rgba(0,0,0,.58);
+
+  --mrk-hover: rgba(0,0,0,.05);
+
+  --mrk-inline-bg: rgba(0,0,0,.06);
+  
 }
 
 /* ==========================================================================

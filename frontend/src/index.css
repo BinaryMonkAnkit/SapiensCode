@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+@layer utilities {
+  :root {
+    --blur-4xl: 72px;
+    --blur-5xl: 96px;
+  }
+}

@@ -1,0 +1,222 @@
+.code-block-container{
+
+    margin:16px 0;
+
+
+
+    overflow:hidden;
+
+
+
+    display:flex;
+
+    flex-direction:column;
+
+
+
+    border-radius:var(--mrk-radius);
+
+
+
+    border:1px solid var(--mrk-border);
+
+
+
+    background:var(--mrk-code-bg);
+
+
+
+    backdrop-filter:var(--mrk-blur);
+
+    -webkit-backdrop-filter:var(--mrk-blur-webkit);
+
+
+
+    box-shadow:
+
+        0 12px 30px rgba(0,0,0,.12),
+
+        inset 0 1px 0 rgba(255,255,255,.04);
+
+}
+
+
+
+.code-block-header{
+
+
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+
+
+    padding:12px 16px;
+
+
+
+    background:var(--mrk-code-header-bg);
+
+
+
+    border-bottom:1px solid var(--mrk-border);
+
+
+
+    backdrop-filter:var(--mrk-blur);
+
+    -webkit-backdrop-filter:var(--mrk-blur-webkit);
+
+
+
+    user-select:none;
+
+}
+
+
+
+.code-block-lang{
+
+
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+
+
+    font-size:11px;
+
+    font-weight:700;
+
+
+
+    letter-spacing:.06em;
+
+    text-transform:uppercase;
+
+
+
+    color:var(--mrk-text-muted);
+
+}
+
+
+
+.code-block-copy-btn{
+
+
+
+    display:flex;
+
+    align-items:center;
+
+    gap:6px;
+
+
+
+    padding:6px 10px;
+
+
+
+    border:none;
+
+    border-radius:8px;
+
+
+
+    background:transparent;
+
+
+
+    color:var(--mrk-text-muted);
+
+
+
+    cursor:pointer;
+
+
+
+    transition:all var(--mrk-transition);
+
+}
+
+
+
+.code-block-copy-btn:hover{
+
+
+
+    background:var(--mrk-hover);
+
+
+
+    color:var(--mrk-text);
+
+}
+
+
+
+.code-block-scroll{
+
+
+
+    overflow:auto;
+
+
+
+    width:100%;
+
+}
+
+
+
+.inline-code{
+
+
+
+    padding:2px 6px;
+
+
+
+    border-radius:6px;
+
+
+
+    background:var(--mrk-inline-bg);
+
+
+
+    font-family:SFMono-Regular,Consolas,Menlo,monospace;
+
+
+
+    font-size:13px;
+
+}
+
+
+
+
+
+.table-container { width: 100%; overflow-x: auto; margin: 16px 0; border-radius: 8px; border: 1px solid var(--chat-border); }
+
+.markdown-table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }
+
+.markdown-table th, .markdown-table td { padding: 10px 14px; border-bottom: 1px solid var(--chat-border); }
+
+.markdown-table th { font-weight: 600; }
+
+.dark-theme .markdown-table th { background: #1f1f23; }
+
+.light-theme .markdown-table th { background: #eaedf0; }
+
+.markdown-table tr:last-child td { border-bottom: none; }
+
+.markdown-table tr:nth-child(even) { background: rgba(0, 0, 0, 0.02); }
+

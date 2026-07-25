@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import styles from "./ChatUI.module.css";
 import PromptBar from "./components/PromptBar/PromptBar";
 import ModelSelector from "./components/PromptBar/ModelSelector";
@@ -8,7 +8,7 @@ import { generateUUID } from "./utils/generateUUID";
 import {
   fetchAvailableModels,
   streamChatAssistant,
-} from "./services/assistantService";
+} from "../../services/assistantService";
 
 export default function ChatUI({
   isDarkMode,
@@ -20,6 +20,10 @@ export default function ChatUI({
   const [models, setModels] = useState([]);
   const [selectedModel, setSelectedModel] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const workspaceRef = useRef(null);
+  const promptDockRef = useRef(null);
+
+  const [showHero, setShowHero] = useState(true);
 
   const sessionIdRef = useRef(generateUUID());
 
@@ -29,6 +33,64 @@ export default function ChatUI({
 
   const hasMessages = messages.length > 0;
 
+  useEffect(() => {
+    if (hasMessages || !promptDockRef.current || !workspaceRef.current) return;
+
+    const checkSpace = () => {
+      if (!promptDockRef.current || !workspaceRef.current) return;
+
+      const promptHeight = promptDockRef.current.offsetHeight;
+      const workspaceHeight = workspaceRef.current.offsetHeight;
+
+      // Only hide Hero if input expands past 150px (4+ lines of text)
+      // OR if total screen height is severely constrained (< 450px)
+      const isHeightTooLarge = promptHeight > 150;
+      const isScreenTooSmall = workspaceHeight < 450;
+
+      setShowHero(!isHeightTooLarge && !isScreenTooSmall);
+    };
+
+    const observer = new ResizeObserver(checkSpace);
+    observer.observe(promptDockRef.current);
+    observer.observe(workspaceRef.current);
+
+    return () => observer.disconnect();
+  }, [hasMessages]);
+
+  // const checkHeroVisibility = useCallback(() => {
+  //   if (!workspaceRef.current || !promptDockRef.current) return;
+
+  //   const workspaceTop = workspaceRef.current.getBoundingClientRect().top;
+  //   const promptTop = promptDockRef.current.getBoundingClientRect().top;
+
+  //   // Measure dynamic height of promptDockRef
+  //   const promptHeight = promptDockRef.current.offsetHeight;
+
+  //   // Hide Hero if the space above the prompt dock drops below 220px (or if promptBar expands too much)
+  //   const availableHeightAbovePrompt = promptTop - workspaceTop;
+
+  //   setShowHero(availableHeightAbovePrompt >= 220 && promptHeight < 160);
+  // }, []);
+
+  // // For checking available space for welcome hero text
+  // useEffect(() => {
+  //   checkHeroVisibility();
+
+  //   window.addEventListener("resize", checkHeroVisibility);
+
+  //   return () => window.removeEventListener("resize", checkHeroVisibility);
+  // }, [checkHeroVisibility]);
+
+  // // Window based space checking
+  // useEffect(() => {
+  //   checkHeroVisibility();
+
+  //   window.addEventListener("resize", checkHeroVisibility);
+
+  //   return () => window.removeEventListener("resize", checkHeroVisibility);
+  // }, [checkHeroVisibility]);
+
+  //fetch available models
   useEffect(() => {
     async function loadModels() {
       const data = await fetchAvailableModels();
@@ -119,18 +181,17 @@ export default function ChatUI({
       </div>
 
       <div
-        className={`${styles["chat-workspace-body"]} ${hasMessages ? styles["grid-active"] : styles["grid-empty"]}`}
+        ref={workspaceRef}
+        className={`${styles["chat-workspace-body"]} ${
+          hasMessages ? styles["grid-active"] : styles["grid-empty"]
+        }`}
       >
-        {!hasMessages && (
-          <div className={styles["welcome-hero"]}>
-            <h1 className={styles["hero-title"]}>How can I help you today?</h1>
-          </div>
-        )}
-
-        {hasMessages && (
+        {hasMessages ? (
           <div
             ref={scrollContainerRef}
-            className={`${styles["conversation-flow"]} ${isScrolling ? styles["scrolling-active"] : ""}`}
+            className={`${styles["conversation-flow"]} ${
+              isScrolling ? styles["scrolling-active"] : ""
+            }`}
           >
             <div className={styles["scroll-content-centered-lane"]}>
               {messages.map((msg, index) => (
@@ -148,21 +209,41 @@ export default function ChatUI({
               ))}
             </div>
           </div>
+        ) : (
+          /* Empty State Dock: Wraps Hero + PromptBar together */
+          <div className={styles["prompt-dock-center"]}>
+            <div
+              className={`${styles["welcome-hero"]} ${
+                showHero ? styles["hero-visible"] : styles["hero-hidden"]
+              }`}
+            >
+              <h1 className={styles["hero-title"]}>
+                How can I help you today?
+              </h1>
+            </div>
+
+            <div ref={promptDockRef} className="w-full">
+              <PromptBar
+                className={styles.promptBar}
+                isDarkMode={isDarkMode}
+                onSubmit={handleSendMessage}
+                disabled={isStreaming}
+              />
+            </div>
+          </div>
         )}
 
-        <div
-          className={
-            hasMessages
-              ? styles["prompt-dock-bottom"]
-              : styles["prompt-dock-center"]
-          }
-        >
-          <PromptBar
-            isDarkMode={isDarkMode}
-            onSubmit={handleSendMessage}
-            disabled={isStreaming}
-          />
-        </div>
+        {/* Active State Dock: Pinned at the bottom during chat */}
+        {hasMessages && (
+          <div ref={promptDockRef} className={styles["prompt-dock-bottom"]}>
+            <PromptBar
+              className={styles.promptBar}
+              isDarkMode={isDarkMode}
+              onSubmit={handleSendMessage}
+              disabled={isStreaming}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

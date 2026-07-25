@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { Play, Square } from "lucide-react";
-import "../../styles/tokens.css";
+// import "../../styles/tokens.css";
 import styles from "./EditorToolBar.module.css";
 import {
   python,
@@ -9,7 +9,7 @@ import {
   c,
   cpp,
   java,
-} from "../../assets/programmingLang/langSVG/LangIconExporter.js";
+} from "../../../assets/programmingLang/langSVG/LangIconExporter.js";
 
 // 1. Updated to include SVG paths instead of badge colors
 export const LANGUAGES = [
@@ -54,9 +54,6 @@ const EditorToolbar = ({
   onRun,
   onStop,
 }) => {
-  console.log(`This is EditorToolbar, and isDarkMode value is: ${isDarkMode}`);
-  console.log(`This is EditorToolbar, and isDarkMode value is: ${isDarkMode}`);
-
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [menuPos, setMenuPos] = useState({
     top: 0,

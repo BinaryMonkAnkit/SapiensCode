@@ -5,8 +5,8 @@ import styles from "./PromptBar.module.css";
 export default function PromptBar({
   placeholder = "Ask your query to get help from an AI.",
   onSubmit = () => {},
-  theme = "light",
-  isDarkMode = undefined,
+  isDarkMode,
+  onLayoutChange = () => {},
 }) {
   const [value, setText] = useState("");
   const [focused, setFocused] = useState(false);
@@ -19,19 +19,20 @@ export default function PromptBar({
   // Keeps track of text before speech started to prevent looping duplicates
   const baseTextRef = useRef("");
 
-  const isDark =
-    typeof isDarkMode === "boolean" ? isDarkMode : theme === "dark";
-
   useLayoutEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
+
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
 
     const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 20;
     const wrapped = el.scrollHeight > lineHeight * 1.1;
+
     setIsWrapped(wrapped);
-  }, [value]);
+
+    requestAnimationFrame(onLayoutChange);
+  }, [value, onLayoutChange]);
 
   // Integrated Web Speech API Hook
   const toggleSpeechRecognition = () => {
@@ -113,13 +114,14 @@ export default function PromptBar({
         <form
           onSubmit={handleSubmit}
           className={[
-            "flex items-center gap-3 w-full rounded-3xl px-4 py-2 border transition-shadow duration-200 ease-out relative overflow-visible",
+            "flex items-center gap-3 w-full rounded-3xl px-4 py-2 border transition-shadow duration-200 ease-out relative overflow-visible promptBar",
+            "backdrop-blur-5xl backdrop-saturate-150 backdrop-contrast-125", // strong blur + saturation/contrast, no darkening
             isWrapped ? "pb-16" : "",
-            isDark
+            isDarkMode
               ? focused
                 ? `border-gray-600 bg-transparent ${styles.searchbarDarkGlow}`
                 : `border-gray-700 bg-transparent ${styles.searchbarDarkGlow}`
-              : `border-slate-300 bg-slate-100/85 ${styles.searchbarLightGlow}`,
+              : `border-slate-300 bg-transparent ${styles.searchbarLightGlow}`,
           ].join(" ")}
         >
           <textarea
@@ -135,10 +137,10 @@ export default function PromptBar({
             }
             className={[
               styles.textarea,
-              isDark ? styles.textareaDark : styles.textareaLight,
+              isDarkMode ? styles.textareaDark : styles.textareaLight,
               "flex-1 self-stretch outline-none resize-none bg-transparent text-base leading-6 min-h-10.5 max-h-[45vh] overflow-y-auto py-2",
               isWrapped ? "pr-4" : "pr-24",
-              isDark ? "text-gray-100" : "text-gray-900",
+              isDarkMode ? "text-gray-100" : "text-gray-900",
             ].join(" ")}
           />
 
@@ -149,11 +151,10 @@ export default function PromptBar({
             }
             style={{ zIndex: 50 }}
           >
-            {/* 🔍 FIX: Changed prop name from onSubmit to onSend to map with PromptBarIcons expected parameters */}
             <PromptBarIcons
               onVoice={toggleSpeechRecognition}
               onSend={handleSubmit}
-              isDark={isDark}
+              isDarkMode={isDarkMode}
               fullWidth={isWrapped}
               isListening={isListening}
             />

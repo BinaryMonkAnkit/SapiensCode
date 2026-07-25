@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Group, Panel, Separator } from "react-resizable-panels";
-import CodeEditor from "./CodeEditor";
-import Terminal from "./Terminal";
+import CodeEditor from "./Editor/CodeEditor";
+import Terminal from "./Terminal/Terminal";
 import styles from "./CodeWorkspace.module.css";
 
 const CodeWorkspace = ({ isDarkMode }) => {
@@ -9,8 +9,6 @@ const CodeWorkspace = ({ isDarkMode }) => {
   const [code, setCode] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-
-  console.log(`This is CodeWorkspace, and isDarkMode value is: ${isDarkMode}`);
 
   // Responsive layout state
   const [isMobile, setIsMobile] = useState(false);

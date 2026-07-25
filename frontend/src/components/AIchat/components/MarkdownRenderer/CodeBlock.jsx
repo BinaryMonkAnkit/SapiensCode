@@ -5,7 +5,7 @@ import {
   oneDark,
   oneLight,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
-import styles from "../../ChatUI.module.css";
+import styles from "./MarkdownRenderer.module.css";
 
 export default function CodeBlock({
   inline,
@@ -54,11 +54,16 @@ export default function CodeBlock({
             style={isDarkMode ? oneDark : oneLight}
             language={match[1]}
             PreTag="div"
+            codeTagProps={{
+              style: {
+                background: "transparent",
+              },
+            }}
             customStyle={{
               margin: 0,
-              padding: "14px",
-              background: "transparent",
+              padding: "18px",
               fontSize: "13.5px",
+              borderRadius: 0,
             }}
             {...props}
           >

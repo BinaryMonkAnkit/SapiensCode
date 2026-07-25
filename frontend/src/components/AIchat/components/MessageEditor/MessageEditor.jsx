@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import styles from "../../ChatUI.module.css";
+import styles from "./MessageEditor.module.css";
 
 export default function MessageEditor({ initialText, onSave, onCancel }) {
   const [text, setText] = useState(initialText);

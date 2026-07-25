@@ -1,0 +1,73 @@
+/* ==========================================================================
+   Fluid Claude-Style Inline Editor System
+   ========================================================================== */
+.claude-edit-lane-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  animation: fadeInMessage 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.claude-edit-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100px;
+  border: 1px solid var(--claude-edit-border);
+  border-radius: 16px;
+  background: var(--user-bubble-bg);
+  padding: 16px 20px;
+  box-sizing: border-box;
+  height: auto;
+}
+
+.claude-edit-textarea {
+  width: 100% !important;
+  display: block;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow-y: hidden;
+  color: var(--chat-text-main);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+  padding: 0;
+  margin: 0 0 16px 0;
+  box-sizing: border-box;
+}
+
+.claude-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid var(--chat-border);
+  padding-top: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.claude-btn-cancel, 
+.claude-btn-save {
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.claude-btn-cancel {
+  background: transparent;
+  border: 1px solid var(--claude-edit-border);
+  color: var(--chat-text-main);
+}
+
+.claude-btn-cancel:hover { background: var(--claude-btn-hover); }
+
+.claude-btn-save { background: var(--claude-btn-resend-bg); border: none; color: var(--claude-btn-text-color); }
+.claude-btn-save:hover { background: var(--claude-btn-resend-hover); }

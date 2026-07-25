@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import Editor from "@monaco-editor/react";
-import "../../styles/tokens.css";
+// import "../../styles/tokens.css";
 import styles from "./CodeEditor.module.css";
-import EditorToolbar, { LANGUAGES } from "./EditorToolbar";
+import EditorToolbar, { LANGUAGES } from "./EditorToolBar";
 import {
   handleEditorBeforeMount,
   createEditorMountHandler,
@@ -30,8 +30,6 @@ const CodeEditor = ({
 }) => {
   const editorRef = useRef(null);
   const codeAreaRef = useRef(null);
-
-  console.log(`This is CodeEditor, and isDarkMode value is: ${isDarkMode}`);
 
   // Swap template when language changes
   useEffect(() => {

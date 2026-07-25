@@ -1,3 +1,12 @@
+/* .promptBar {
+  background-color: rgba(22, 22, 30, 0.75) !important;
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+} */
+
+
 .promptbarLightGlow {
   box-shadow: 0 10px 70px rgba(56, 139, 253, 0.16);
   background: rgba(248, 250, 252, 0.94);
