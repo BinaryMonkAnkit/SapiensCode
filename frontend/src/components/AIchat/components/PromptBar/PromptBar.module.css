@@ -1,29 +1,105 @@
+/* ==========================================================================
+   Responsive PromptBar Wrapper & Container
+   ========================================================================== */
+.promptBarWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.promptBarContainer {
+  position: relative;
+  width: 100%;
+  max-width: 42rem; /* Standard desktop width */
+  box-sizing: border-box;
+  transition: width 0.2s ease, margin 0.2s ease;
+}
+
+/* ==========================================================================
+   Glass Backdrop Surface
+   ========================================================================== */
 .glassBackdrop {
   position: absolute;
   inset: 0;
   border-radius: 1.5rem;
   pointer-events: none;
   
-  /* Applies the SVG filter to the backdrop sampling layer */
-  backdrop-filter: url("#promptBarGlassFilter") blur(24px) saturate(180%);
-  -webkit-backdrop-filter: url("#promptBarGlassFilter") blur(24px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
   
   transform: translateZ(0);
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .backdropDark {
-  /* Subtle 30% background tint */
-  background: rgba(18, 22, 32, 0.3) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: rgba(18, 22, 32, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: 
-    0 16px 36px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .backdropLight {
-  background: rgba(255, 255, 255, 0.25) !important;
-  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  background: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
   box-shadow: 
-    0 16px 36px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    0 20px 40px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* ==========================================================================
+   Textarea Placeholder & Height Auto-Expansion
+   ========================================================================== */
+.textarea {
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+  overflow-y: hidden; /* Hides scrollbar when expanding height for placeholder */
+}
+
+/* Display scrollbars only when content exceeds 45vh */
+.textarea:focus,
+.textarea:hover {
+  overflow-y: auto;
+}
+
+/* Chrome, Safari, Edge Scrollbar */
+.textarea::-webkit-scrollbar {
+  width: 4px;
+}
+
+.textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.textarea::-webkit-scrollbar-thumb {
+  border-radius: 99px;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.textareaDark:hover::-webkit-scrollbar-thumb,
+.textareaDark:focus::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.textareaLight:hover::-webkit-scrollbar-thumb,
+.textareaLight:focus::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================================================
+   Mobile Query: 2% Margin Left and Right on Small Screens
+   ========================================================================== */
+@media (max-width: 640px) {
+  .promptBarWrapper {
+    padding-left: 1% !important;
+    padding-right: 1% !important;
+  }
+
+  .promptBarContainer {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
 }

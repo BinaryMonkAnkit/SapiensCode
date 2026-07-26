@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect } from "react";
+import { useState, useRef, useLayoutEffect, useEffect } from "react";
 import PromptBarIcons from "./PromptBarIcons";
 import styles from "./PromptBar.module.css";
 
@@ -16,22 +16,37 @@ export default function PromptBar({
   const recognitionRef = useRef(null);
   const [isWrapped, setIsWrapped] = useState(false);
 
-  const baseTextRef = useRef("");
+  // Tracks text existing BEFORE speech started
+  const initialTextRef = useRef("");
+  // Tracks all accumulated FINAL transcripts recorded during current voice session
+  const accumulatedFinalRef = useRef("");
 
   useLayoutEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
 
     el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
+    const newHeight = Math.max(el.scrollHeight, 42);
+    el.style.height = `${newHeight}px`;
 
     const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 20;
-    const wrapped = el.scrollHeight > lineHeight * 1.1;
+    const wrapped = el.scrollHeight > lineHeight * 1.5;
 
     setIsWrapped(wrapped);
-
     requestAnimationFrame(onLayoutChange);
-  }, [value, onLayoutChange]);
+  }, [value, placeholder, onLayoutChange]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const el = textareaRef.current;
+      if (!el) return;
+      el.style.height = "auto";
+      el.style.height = `${Math.max(el.scrollHeight, 42)}px`;
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const toggleSpeechRecognition = () => {
     const SpeechRecognition =
@@ -44,10 +59,13 @@ export default function PromptBar({
 
     if (isListening) {
       recognitionRef.current?.stop();
+      setIsListening(false);
       return;
     }
 
-    baseTextRef.current = value.trim() ? value.trim() + " " : "";
+    // Capture baseline text before speech recognition starts
+    initialTextRef.current = value.trim() ? value.trim() + " " : "";
+    accumulatedFinalRef.current = "";
 
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
@@ -59,26 +77,37 @@ export default function PromptBar({
     };
 
     recognition.onresult = (event) => {
+      let currentSessionFinal = "";
       let interimTranscript = "";
-      let finalTranscript = "";
 
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
+      // Walk through ALL results from index 0 to ensure zero lost chunks
+      for (let i = 0; i < event.results.length; ++i) {
+        const transcriptChunk = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
+          currentSessionFinal += transcriptChunk + " ";
         } else {
-          interimTranscript += event.results[i][0].transcript;
+          interimTranscript += transcriptChunk;
         }
       }
 
-      const spoken = finalTranscript || interimTranscript;
-      if (spoken) {
-        setText(baseTextRef.current + spoken);
-      }
+      // Store final speech chunks
+      accumulatedFinalRef.current = currentSessionFinal;
+
+      // Combine baseline text + all finalized speech + current live interim speech
+      const completeText =
+        initialTextRef.current +
+        accumulatedFinalRef.current +
+        interimTranscript;
+
+      setText(completeText);
     };
 
     recognition.onerror = (err) => {
-      console.error("Speech Recognition Error", err);
-      setIsListening(false);
+      console.error("Speech Recognition Error:", err);
+      // Ignore non-fatal audio-capture/no-speech warnings
+      if (err.error !== "no-speech" && err.error !== "audio-capture") {
+        setIsListening(false);
+      }
     };
 
     recognition.onend = () => {
@@ -86,15 +115,25 @@ export default function PromptBar({
     };
 
     recognitionRef.current = recognition;
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error("Failed to start speech recognition:", e);
+      setIsListening(false);
+    }
   };
 
   function handleSubmit(e) {
     if (e) e.preventDefault();
     if (!value.trim()) return;
-    if (isListening) recognitionRef.current?.stop();
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
     onSubmit(value);
     setText("");
+    initialTextRef.current = "";
+    accumulatedFinalRef.current = "";
   }
 
   function handleKeyDown(e) {
@@ -105,41 +144,8 @@ export default function PromptBar({
   }
 
   return (
-    <div className="w-full flex justify-center">
-      {/* Hidden SVG Filter Definition */}
-      <svg
-        style={{
-          position: "absolute",
-          width: 0,
-          height: 0,
-          overflow: "hidden",
-        }}
-      >
-        <filter
-          id="promptBarGlassFilter"
-          x="-20%"
-          y="-20%"
-          width="140%"
-          height="140%"
-        >
-          {/* Heavy Gaussian dispersion */}
-          <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="blur" />
-          {/* Color Matrix to wash out high contrast white text edges */}
-          <feColorMatrix
-            type="matrix"
-            values="
-              1 0 0 0 0
-              0 1 0 0 0
-              0 0 1 0 0
-              0 0 0 18 -7"
-            result="goo"
-          />
-          <feBlend in="SourceGraphic" in2="goo" />
-        </filter>
-      </svg>
-
-      <div ref={containerRef} className="relative w-full max-w-xl">
-        {/* Visual Glass Backdrop */}
+    <div className={styles.promptBarWrapper}>
+      <div ref={containerRef} className={styles.promptBarContainer}>
         <div
           className={[
             styles.glassBackdrop,
@@ -147,7 +153,6 @@ export default function PromptBar({
           ].join(" ")}
         />
 
-        {/* Interactive Form */}
         <form
           onSubmit={handleSubmit}
           className={[
@@ -159,7 +164,10 @@ export default function PromptBar({
             ref={textareaRef}
             rows={1}
             value={value}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value);
+              initialTextRef.current = e.target.value;
+            }}
             onKeyDown={handleKeyDown}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
@@ -169,7 +177,7 @@ export default function PromptBar({
             className={[
               styles.textarea,
               isDarkMode ? styles.textareaDark : styles.textareaLight,
-              "flex-1 self-stretch outline-none resize-none bg-transparent text-base leading-6 min-h-10.5 max-h-[45vh] overflow-y-auto py-2",
+              "flex-1 self-stretch outline-none resize-none bg-transparent text-base leading-6 min-h-[42px] max-h-[45vh] py-2",
               isWrapped ? "pr-4" : "pr-24",
               isDarkMode ? "text-gray-100" : "text-gray-900",
             ].join(" ")}
