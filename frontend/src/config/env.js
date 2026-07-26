@@ -6,7 +6,6 @@ export const ASSISTANT_CHAT_ENDPOINT = import.meta.env.VITE_ASSISTANT_CHAT_ENDPO
 export const ASSISTANT_MODELS_ENDPOINT = import.meta.env.VITE_ASSISTANT_MODELS_ENDPOINT;
 
 
-console.log('http base url: ',HTTP_BASE_URL);
 
 
 // WebSocket Base URL (Fallback to ws://localhost:8000/ws)
