@@ -177,7 +177,7 @@ export default function PromptBar({
             className={[
               styles.textarea,
               isDarkMode ? styles.textareaDark : styles.textareaLight,
-              "flex-1 self-stretch outline-none resize-none bg-transparent text-base leading-6 min-h-[42px] max-h-[45vh] py-2",
+              "flex-1 self-stretch outline-none resize-none bg-transparent text-base leading-6 min-h-10.5 max-h-[45vh] py-2",
               isWrapped ? "pr-4" : "pr-24",
               isDarkMode ? "text-gray-100" : "text-gray-900",
             ].join(" ")}
