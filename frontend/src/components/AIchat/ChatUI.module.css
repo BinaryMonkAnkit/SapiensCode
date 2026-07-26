@@ -1,3 +1,4 @@
+/* Base Chat Container overrides */
 .chat-container {
   font-family: var(--sb-font-ui);
   width: 100%;
@@ -5,7 +6,7 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding: 0 24px;
+  padding: 0; /* Cleared fixed horizontal padding */
   overflow: hidden;
   position: relative;
   -webkit-font-smoothing: antialiased;
@@ -91,7 +92,18 @@
   overflow-x: hidden;
   box-sizing: border-box;
 
-  
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black calc(100% - 160px),
+    transparent calc(100% - 40px)
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black calc(100% - 160px),
+    transparent calc(100% - 40px)
+  );
 }
 
 .conversation-flow::-webkit-scrollbar { width: 6px; }
@@ -99,24 +111,28 @@
 .conversation-flow::-webkit-scrollbar-thumb { background: transparent; border-radius: 99px; }
 .conversation-flow:hover::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); }
 
+/* ==========================================================================
+   Fluid Chat Reading Lane (5% Left & Right Margins)
+   ========================================================================== */
 .scroll-content-centered-lane {
   width: 100%;
-  max-width: 45rem; 
+  max-width: 100%; 
   margin: 0 auto;
   
-  padding-left: clamp(0.75rem, 3vw, 1.5rem);
-  padding-right: clamp(0.75rem, 3vw, 1.5rem);
+  /* Dynamic 5% margin on left and right across all devices */
+  padding-left: 10%;
+  padding-right: 10%;
   
-  /* Single top padding accounting for 56px header */
+  /* Top padding accounting for header */
   padding-top: 72px; 
   
-  /* Clean bottom clearance so content can scroll past the dock */
+  /* Bottom clearance so messages scroll past the floating prompt dock */
   padding-bottom: 160px; 
   
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: clamp(1.25rem, 4vh, 2.5rem);
+  gap: clamp(1rem, 3vh, 2rem);
 }
 
 .prompt-dock-center {
