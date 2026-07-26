@@ -1,9 +1,8 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styles from "./ChatUI.module.css";
 import PromptBar from "./components/PromptBar/PromptBar";
 import ModelSelector from "./components/PromptBar/ModelSelector";
 import ChatMessage from "./components/ChatMessage/ChatMessage";
-import useChatScroll from "./hooks/useChatScroll";
 import { generateUUID } from "./utils/generateUUID";
 import {
   fetchAvailableModels,
@@ -20,18 +19,39 @@ export default function ChatUI({
   const [models, setModels] = useState([]);
   const [selectedModel, setSelectedModel] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+
   const workspaceRef = useRef(null);
   const promptDockRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+  const lastUserMsgRef = useRef(null);
 
   const [showHero, setShowHero] = useState(true);
-
   const sessionIdRef = useRef(generateUUID());
 
-  // Extracted Custom Hook
-  const { scrollContainerRef, isScrolling, isEditingActionRef } =
-    useChatScroll(messages);
-
   const hasMessages = messages.length > 0;
+
+  // 1. Scroll user prompt to bottom / top of view upon submission
+  const scrollToUserPrompt = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  // 2. Adjust view during streaming so the start of the assistant response stays aligned (Gemini style)
+  useEffect(() => {
+    if (isStreaming && lastUserMsgRef.current && scrollContainerRef.current) {
+      // Align the last user message near the top of the container
+      // so the AI response immediately follows in clear view without jumping to the absolute bottom
+      const userMsgTop = lastUserMsgRef.current.offsetTop;
+      scrollContainerRef.current.scrollTo({
+        top: Math.max(0, userMsgTop - 70), // 70px offset for header spacing
+        behavior: "smooth",
+      });
+    }
+  }, [isStreaming]);
 
   useEffect(() => {
     if (hasMessages || !promptDockRef.current || !workspaceRef.current) return;
@@ -42,8 +62,6 @@ export default function ChatUI({
       const promptHeight = promptDockRef.current.offsetHeight;
       const workspaceHeight = workspaceRef.current.offsetHeight;
 
-      // Only hide Hero if input expands past 150px (4+ lines of text)
-      // OR if total screen height is severely constrained (< 450px)
       const isHeightTooLarge = promptHeight > 150;
       const isScreenTooSmall = workspaceHeight < 450;
 
@@ -57,40 +75,6 @@ export default function ChatUI({
     return () => observer.disconnect();
   }, [hasMessages]);
 
-  // const checkHeroVisibility = useCallback(() => {
-  //   if (!workspaceRef.current || !promptDockRef.current) return;
-
-  //   const workspaceTop = workspaceRef.current.getBoundingClientRect().top;
-  //   const promptTop = promptDockRef.current.getBoundingClientRect().top;
-
-  //   // Measure dynamic height of promptDockRef
-  //   const promptHeight = promptDockRef.current.offsetHeight;
-
-  //   // Hide Hero if the space above the prompt dock drops below 220px (or if promptBar expands too much)
-  //   const availableHeightAbovePrompt = promptTop - workspaceTop;
-
-  //   setShowHero(availableHeightAbovePrompt >= 220 && promptHeight < 160);
-  // }, []);
-
-  // // For checking available space for welcome hero text
-  // useEffect(() => {
-  //   checkHeroVisibility();
-
-  //   window.addEventListener("resize", checkHeroVisibility);
-
-  //   return () => window.removeEventListener("resize", checkHeroVisibility);
-  // }, [checkHeroVisibility]);
-
-  // // Window based space checking
-  // useEffect(() => {
-  //   checkHeroVisibility();
-
-  //   window.addEventListener("resize", checkHeroVisibility);
-
-  //   return () => window.removeEventListener("resize", checkHeroVisibility);
-  // }, [checkHeroVisibility]);
-
-  //fetch available models
   useEffect(() => {
     async function loadModels() {
       const data = await fetchAvailableModels();
@@ -116,6 +100,11 @@ export default function ChatUI({
       { id: userMessageId, role: "user", text: text },
       { id: assistantMessageId, role: "assistant", text: "" },
     ]);
+
+    // Force scroll down immediately after setting user message
+    requestAnimationFrame(() => {
+      scrollToUserPrompt();
+    });
 
     const payload = {
       message: text,
@@ -150,7 +139,6 @@ export default function ChatUI({
 
   const startEditing = (id) => {
     if (isStreaming) return;
-    isEditingActionRef.current = true;
     setEditingId(id);
   };
 
@@ -187,30 +175,30 @@ export default function ChatUI({
         }`}
       >
         {hasMessages ? (
-          <div
-            ref={scrollContainerRef}
-            className={`${styles["conversation-flow"]} ${
-              isScrolling ? styles["scrolling-active"] : ""
-            }`}
-          >
+          <div ref={scrollContainerRef} className={styles["conversation-flow"]}>
             <div className={styles["scroll-content-centered-lane"]}>
-              {messages.map((msg, index) => (
-                <ChatMessage
-                  key={msg.id}
-                  msg={msg}
-                  isDarkMode={isDarkMode}
-                  isStreaming={isStreaming}
-                  isLastMessage={index === messages.length - 1}
-                  isEditing={editingId === msg.id}
-                  onStartEdit={startEditing}
-                  onSaveEdit={saveEdit}
-                  onCancelEdit={() => setEditingId(null)}
-                />
-              ))}
+              {messages.map((msg, index) => {
+                const isLastUserMsg =
+                  msg.role === "user" && index === messages.length - 2;
+
+                return (
+                  <div key={msg.id} ref={isLastUserMsg ? lastUserMsgRef : null}>
+                    <ChatMessage
+                      msg={msg}
+                      isDarkMode={isDarkMode}
+                      isStreaming={isStreaming}
+                      isLastMessage={index === messages.length - 1}
+                      isEditing={editingId === msg.id}
+                      onStartEdit={startEditing}
+                      onSaveEdit={saveEdit}
+                      onCancelEdit={() => setEditingId(null)}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
         ) : (
-          /* Empty State Dock: Wraps Hero + PromptBar together */
           <div className={styles["prompt-dock-center"]}>
             <div
               className={`${styles["welcome-hero"]} ${
@@ -233,7 +221,6 @@ export default function ChatUI({
           </div>
         )}
 
-        {/* Active State Dock: Pinned at the bottom during chat */}
         {hasMessages && (
           <div ref={promptDockRef} className={styles["prompt-dock-bottom"]}>
             <PromptBar

@@ -1,17 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, memo } from "react";
 import { Copy, Check, Terminal } from "lucide-react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
-  oneDark,
-  oneLight,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
+  atomOneDark as oneDark,
+  atomOneLight as oneLight,
+} from "react-syntax-highlighter/dist/esm/styles/hljs";
 import styles from "./MarkdownRenderer.module.css";
 
-export default function CodeBlock({
+// Memoize the code block so existing blocks don't re-render
+// when new streaming messages update parent state.
+const CodeBlock = memo(function CodeBlock({
   inline,
   className,
   children,
   isDarkMode,
+  isStreaming, // Pass isStreaming prop down if available in Markdown component
   ...props
 }) {
   const [copied, setCopied] = useState(false);
@@ -25,16 +28,19 @@ export default function CodeBlock({
   };
 
   if (!inline && match) {
+    const language = match[1];
+
     return (
       <div className={styles["code-block-container"]}>
         <div className={styles["code-block-header"]}>
           <div className={styles["code-block-lang"]}>
             <Terminal size={12} />
-            <span>{match[1]}</span>
+            <span>{language}</span>
           </div>
           <button
             className={styles["code-block-copy-btn"]}
             onClick={handleCopy}
+            type="button"
           >
             {copied ? (
               <>
@@ -49,26 +55,42 @@ export default function CodeBlock({
             )}
           </button>
         </div>
+
         <div className={styles["code-block-scroll"]}>
-          <SyntaxHighlighter
-            style={isDarkMode ? oneDark : oneLight}
-            language={match[1]}
-            PreTag="div"
-            codeTagProps={{
-              style: {
-                background: "transparent",
-              },
-            }}
-            customStyle={{
-              margin: 0,
-              padding: "18px",
-              fontSize: "13.5px",
-              borderRadius: 0,
-            }}
-            {...props}
-          >
-            {codeContent}
-          </SyntaxHighlighter>
+          {/* While streaming, render light raw text to eliminate tokenization lag. 
+              Once streaming ends, switch to full syntax highlighting. */}
+          {isStreaming ? (
+            <pre
+              style={{
+                margin: 0,
+                padding: "18px",
+                fontSize: "13.5px",
+                fontFamily: "monospace",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-all",
+              }}
+            >
+              <code>{codeContent}</code>
+            </pre>
+          ) : (
+            <SyntaxHighlighter
+              style={isDarkMode ? oneDark : oneLight}
+              language={language}
+              PreTag="div"
+              codeTagProps={{
+                style: { background: "transparent" },
+              }}
+              customStyle={{
+                margin: 0,
+                padding: "18px",
+                fontSize: "13.5px",
+                borderRadius: 0,
+              }}
+              {...props}
+            >
+              {codeContent}
+            </SyntaxHighlighter>
+          )}
         </div>
       </div>
     );
@@ -79,4 +101,6 @@ export default function CodeBlock({
       {children}
     </code>
   );
-}
+});
+
+export default CodeBlock;

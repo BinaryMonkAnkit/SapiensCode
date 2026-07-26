@@ -35,11 +35,22 @@ export default function ChatMessage({
   const displayText =
     isStreaming && isLastMessage && !msg.text ? "●" : msg.text;
 
+  // Determine dark vs light mode class for assistant bubble
+  const assistantThemeClass = isDarkMode
+    ? styles.assistantDark
+    : styles.assistantLight;
+
   return (
     <div
-      className={`${styles["message-row"]} ${msg.role === "user" ? styles["user-row"] : styles["assistant-row"]}`}
+      className={`${styles["message-row"]} ${
+        msg.role === "user" ? styles["user-row"] : styles["assistant-row"]
+      }`}
     >
-      <div className={styles["bubble-wrapper"]}>
+      <div
+        className={`${styles["bubble-wrapper"]} ${
+          msg.role === "assistant" ? assistantThemeClass : ""
+        }`}
+      >
         {msg.role === "user" && (
           <div className={styles["bubble-header"]}>
             <span className={styles["role-badge"]}>You</span>

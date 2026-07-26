@@ -16,7 +16,6 @@ export default function PromptBar({
   const recognitionRef = useRef(null);
   const [isWrapped, setIsWrapped] = useState(false);
 
-  // Keeps track of text before speech started to prevent looping duplicates
   const baseTextRef = useRef("");
 
   useLayoutEffect(() => {
@@ -34,7 +33,6 @@ export default function PromptBar({
     requestAnimationFrame(onLayoutChange);
   }, [value, onLayoutChange]);
 
-  // Integrated Web Speech API Hook
   const toggleSpeechRecognition = () => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -49,7 +47,6 @@ export default function PromptBar({
       return;
     }
 
-    // Capture the existing text state before starting dictation
     baseTextRef.current = value.trim() ? value.trim() + " " : "";
 
     const recognition = new SpeechRecognition();
@@ -73,7 +70,6 @@ export default function PromptBar({
         }
       }
 
-      // 🔍 FIX: Set explicitly matching a flat base snapshot instead of compounding "prev" strings
       const spoken = finalTranscript || interimTranscript;
       if (spoken) {
         setText(baseTextRef.current + spoken);
@@ -110,18 +106,53 @@ export default function PromptBar({
 
   return (
     <div className="w-full flex justify-center">
+      {/* Hidden SVG Filter Definition */}
+      <svg
+        style={{
+          position: "absolute",
+          width: 0,
+          height: 0,
+          overflow: "hidden",
+        }}
+      >
+        <filter
+          id="promptBarGlassFilter"
+          x="-20%"
+          y="-20%"
+          width="140%"
+          height="140%"
+        >
+          {/* Heavy Gaussian dispersion */}
+          <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="blur" />
+          {/* Color Matrix to wash out high contrast white text edges */}
+          <feColorMatrix
+            type="matrix"
+            values="
+              1 0 0 0 0
+              0 1 0 0 0
+              0 0 1 0 0
+              0 0 0 18 -7"
+            result="goo"
+          />
+          <feBlend in="SourceGraphic" in2="goo" />
+        </filter>
+      </svg>
+
       <div ref={containerRef} className="relative w-full max-w-xl">
+        {/* Visual Glass Backdrop */}
+        <div
+          className={[
+            styles.glassBackdrop,
+            isDarkMode ? styles.backdropDark : styles.backdropLight,
+          ].join(" ")}
+        />
+
+        {/* Interactive Form */}
         <form
           onSubmit={handleSubmit}
           className={[
-            "flex items-center gap-3 w-full rounded-3xl px-4 py-2 border transition-shadow duration-200 ease-out relative overflow-visible promptBar",
-            "backdrop-blur-5xl backdrop-saturate-150 backdrop-contrast-125", // strong blur + saturation/contrast, no darkening
+            "flex items-center gap-3 w-full rounded-3xl px-4 py-2 relative z-10",
             isWrapped ? "pb-16" : "",
-            isDarkMode
-              ? focused
-                ? `border-gray-600 bg-transparent ${styles.searchbarDarkGlow}`
-                : `border-gray-700 bg-transparent ${styles.searchbarDarkGlow}`
-              : `border-slate-300 bg-transparent ${styles.searchbarLightGlow}`,
           ].join(" ")}
         >
           <textarea
