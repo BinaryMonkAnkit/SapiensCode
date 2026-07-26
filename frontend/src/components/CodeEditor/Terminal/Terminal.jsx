@@ -15,7 +15,7 @@ import {
   LINE_KIND,
   MESSAGE_TYPE,
   RECONNECT_DELAY_MS,
-} from "../../../services/TerminalServices/terminalConstants";
+} from "../../../services/TerminalServices/TerminalConstants";
 
 /**
  * @typedef {Object} TerminalHandle
