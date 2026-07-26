@@ -1,6 +1,6 @@
 // src/services/useTerminalSocket.js
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { RECONNECT_DELAY_MS } from "./terminalConstants";
+import { RECONNECT_DELAY_MS } from "./TerminalConstants";
 import { getWebSocketUrl } from "../../api/wsClient";
 
 /**
