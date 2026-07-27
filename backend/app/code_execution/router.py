@@ -2,11 +2,11 @@ import asyncio
 import os
 from dotenv import load_dotenv
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from app.services.code_execution.docker_runner import build_docker_args, cleanup_workspace, kill_container, prepare_workspace
-from app.services.code_execution.schemas.languages import LANGUAGES, supported_languages_summary
-from app.services.code_execution.core.concurrency import run_slots
-from app.services.code_execution.handlers.command_handler import handle_command
-from app.services.code_execution.handlers.stdout_stream_handler import stream_stdout
+from app.code_execution.services.docker_runner import build_docker_args, cleanup_workspace, kill_container, prepare_workspace
+from app.code_execution.services.schemas.languages import LANGUAGES, supported_languages_summary
+from app.code_execution.services.core.concurrency import run_slots
+from app.code_execution.services.handlers.command_handler import handle_command
+from app.code_execution.services.handlers.stdout_stream_handler import stream_stdout
 
 # load environment variables
 load_dotenv()

@@ -6,7 +6,7 @@ from langgraph.graph.message import add_messages
 from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.runnables import RunnableConfig  # Import explicit runner configuration
-from app.services.chat_service.core.config import settings
+from app.ai_chat.services.core.config import settings
 
 class AssistantState(TypedDict):
     messages: Annotated[list, add_messages]
