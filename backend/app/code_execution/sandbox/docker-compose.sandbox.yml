@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  sandbox-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sandbox-runner:latest
+    # Ephemeral service: FastAPI launches execution containers dynamically 
+    # using 'sandbox-runner:latest', so this container doesn't need to stay running.
+    entrypoint: ["echo", "Sandbox execution image built and tagged as 'sandbox-runner:latest' successfully."]
