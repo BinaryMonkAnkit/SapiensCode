@@ -2,8 +2,8 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from app.services.chat_service.assistant import assistant_app
-from app.services.chat_service.core.config import settings
+from .services.assistant import assistant_app
+from .services.core.config import settings
 from typing import List, Dict
 
 router = APIRouter(prefix="/assistant", tags=["Assistant"])

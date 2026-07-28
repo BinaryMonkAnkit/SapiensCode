@@ -1,6 +1,6 @@
-from app.services.code_execution.docker_runner import cleanup_workspace
+from app.code_execution.services.docker_runner import cleanup_workspace
 import asyncio
-from app.services.code_execution.core.concurrency import run_slots
+from app.code_execution.services.core.concurrency import run_slots
 from fastapi import WebSocket
 
 
