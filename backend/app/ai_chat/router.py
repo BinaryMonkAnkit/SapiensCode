@@ -1,48 +1,50 @@
-# app/api/assistant.py
-from fastapi import APIRouter, HTTPException
+import json
+import logging
+from typing import List
+from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-from .services.assistant import assistant_app
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+from .services.schemas.chat import ModelMetaResponse, ChatPayload
+from .services.assistant import builder
 from .services.core.config import settings
-from typing import List, Dict
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/assistant", tags=["Assistant"])
 
-# API Schemas
-class ModelMetaResponse(BaseModel):
-    id: str
-    name: str
 
-class ChatPayload(BaseModel):
-    message: str
-    current_code: str
-    selected_text: str = ""
-    session_id: str
-    model_id: str  # The unique string identifier passed from React client dropdown
-
+# 1. GET /assistant/models
 @router.get("/models", response_model=List[ModelMetaResponse])
 async def get_available_models():
-    """
-    Endpoint for the React client to populate its dropdown menu dynamically.
-    """
+    """Returns supported models for frontend dropdown selection."""
     return [
         ModelMetaResponse(id=key, name=meta["name"])
         for key, meta in settings.AVAILABLE_MODELS.items()
     ]
 
+
+# 2. POST /assistant/chat
 @router.post("/chat")
 async def chat_endpoint(payload: ChatPayload):
+    """Streams LLM chat completions with session persistence and error safety."""
+    
+    # Check Whitelist
     if payload.model_id not in settings.AVAILABLE_MODELS:
-        raise HTTPException(status_code=400, detail=f"Model '{payload.model_id}' is not supported.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Model '{payload.model_id}' is not supported. Please select a valid model."
+        )
 
-    # Pass BOTH thread execution memory context AND the selected model parameters
+    # Prepare Execution Config
     config = {
         "configurable": {
             "thread_id": payload.session_id,
             "model_id": payload.model_id
         }
     }
-    
+
+    # Input state payload
     inputs = {
         "messages": [{"role": "user", "content": payload.message}],
         "current_code": payload.current_code,
@@ -50,27 +52,42 @@ async def chat_endpoint(payload: ChatPayload):
     }
 
     async def event_generator():
-        async for event in assistant_app.astream_events(inputs, config, version="v2"):
-            # 1. Capture streaming updates directly from the chat model node
-            if event["event"] == "on_chat_model_stream":
-                chunk_data = event["data"]["chunk"]
-                
-                # Check if the chunk data exists
-                if chunk_data:
-                    # 🔍 PRODUCTION-GRADE PROTECTION:
-                    # Extract string directly based on whether it is a content block or raw message object
-                    if hasattr(chunk_data, "content"):
-                        text_chunk = chunk_data.content
-                    else:
-                        text_chunk = str(chunk_data)
+        try:
+            # Persistent checkpointer connection opened cleanly once per request
+            async with AsyncSqliteSaver.from_conn_string(settings.DB_PATH) as checkpointer:
+                app = builder.compile(checkpointer=checkpointer)
 
-                    # If the content is returned as a list (common with Gemini metadata), join it back to text
-                    if isinstance(text_chunk, list):
-                        # Safely combine parts if Gemini packs multiple content fragments
-                        text_chunk = "".join([part.get("text", "") if isinstance(part, dict) else str(part) for part in text_chunk])
+                async for event in app.astream_events(inputs, config, version="v2"):
+                    if event.get("event") == "on_chat_model_stream":
+                        chunk_data = event.get("data", {}).get("chunk")
+                        if not chunk_data:
+                            continue
 
-                    # Only yield if there is actual text to stream back to the React UI
-                    if text_chunk and isinstance(text_chunk, str):
-                        yield text_chunk
+                        # Extract text across Groq & Gemini providers
+                        text_chunk = getattr(chunk_data, "content", str(chunk_data))
+
+                        if isinstance(text_chunk, list):
+                            text_chunk = "".join(
+                                [part.get("text", "") if isinstance(part, dict) else str(part) for part in text_chunk]
+                            )
+
+                        if text_chunk and isinstance(text_chunk, str):
+                            yield f"data: {json.dumps({'content': text_chunk})}\n\n"
+
+        except Exception as e:
+            logger.error(f"Error during SSE execution: {str(e)}", exc_info=True)
+            
+            # Map raw API errors into clean user messages
+            user_msg = "An unexpected error occurred while generating the response."
+            err_str = str(e).lower()
+
+            if "429" in err_str or "quota" in err_str or "rate limit" in err_str:
+                user_msg = "Free-tier API limit reached. Please switch models or wait a moment."
+            elif "400" in err_str or "context" in err_str:
+                user_msg = "Context limit reached. Older history was auto-summarized."
+            elif "safety" in err_str or "blocked" in err_str:
+                user_msg = "Response flagged by safety filters. Please adjust your request."
+
+            yield f"data: {json.dumps({'error': user_msg})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
