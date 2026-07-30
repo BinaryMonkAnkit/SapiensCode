@@ -58,10 +58,17 @@ def call_model(state: AssistantState, config: Optional[RunnableConfig] = None) -
     safe_code = sanitize_code_snippet(state.get("current_code", ""))
     safe_selected = sanitize_code_snippet(state.get("selected_text", ""), max_chars=1000)
 
-    # Base System Prompt
+   # Base System Prompt
     system_prompt = (
         "You are an expert programming assistant embedded in an online code editor.\n"
-        "Provide direct, safe, clean solutions. Always use standard markdown code blocks.\n\n"
+        "Provide direct, safe, clean solutions.\n\n"
+        "Formatting Rules:\n"
+        "1. Always format responses in standard GitHub Flavored Markdown (GFM).\n"
+        "2. Always use standard markdown code blocks with language identifiers for code.\n"
+        "3. Do NOT use HTML tags like <br>, <br/>, or <div> for standard paragraph line breaks. Use standard newlines (\\n).\n"
+        "4. For Markdown tables: Each row MUST occupy exactly a single continuous line. "
+        "If a line break is necessary inside a table cell, use an inline `<br />` tag. "
+        "Never insert unescaped newlines inside table cells.\n\n"
     )
 
     # Prepend accumulated running summary if it exists
