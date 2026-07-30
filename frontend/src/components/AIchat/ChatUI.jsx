@@ -182,7 +182,12 @@ export default function ChatUI({
                   msg.role === "user" && index === messages.length - 2;
 
                 return (
-                  <div key={msg.id} ref={isLastUserMsg ? lastUserMsgRef : null}>
+                  /* FIX: Added min-width: 0 and w-full class wrapper */
+                  <div
+                    key={msg.id}
+                    ref={isLastUserMsg ? lastUserMsgRef : null}
+                    className={styles["message-wrapper-node"]}
+                  >
                     <ChatMessage
                       msg={msg}
                       isDarkMode={isDarkMode}
