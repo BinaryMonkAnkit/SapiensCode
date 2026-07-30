@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MessageSquare, Code, FileText } from "lucide-react";
 import styles from "./MainLayout.module.css";
 import AmbientBackground from "./components/AmbientBackground";
@@ -9,8 +9,8 @@ import ChatUI from "../AIchat/ChatUI";
 import CodeWorkspace from "../CodeEditor/CodeWorkspace";
 
 const SCROLL_CONFIG = {
-  sectionChangeCooldown: 700, // Blocks rapid trackpad swiping across sections
-  innerScrollLeakyDelay: 350, // MS to wait AFTER hitting an inner container boundary before allowing a section change
+  sectionChangeCooldown: 700,
+  innerScrollLeakyDelay: 350,
 };
 
 const SECTIONS = [
@@ -34,6 +34,37 @@ const SECTIONS = [
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
+// Separate DOM traversals for vertical vs horizontal scroll ancestors
+const getScrollableAncestorY = (el, boundary) => {
+  let node = el;
+  while (node && node !== boundary && node !== document.body) {
+    if (node instanceof HTMLElement) {
+      const style = window.getComputedStyle(node);
+      const canScrollY =
+        /(auto|scroll)/.test(style.overflowY) &&
+        node.scrollHeight > node.clientHeight + 1;
+      if (canScrollY) return node;
+    }
+    node = node.parentElement;
+  }
+  return null;
+};
+
+const getScrollableAncestorX = (el, boundary) => {
+  let node = el;
+  while (node && node !== boundary && node !== document.body) {
+    if (node instanceof HTMLElement) {
+      const style = window.getComputedStyle(node);
+      const canScrollX =
+        /(auto|scroll)/.test(style.overflowX) &&
+        node.scrollWidth > node.clientWidth + 1;
+      if (canScrollX) return node;
+    }
+    node = node.parentElement;
+  }
+  return null;
+};
+
 export default function MainLayout() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -46,11 +77,6 @@ export default function MainLayout() {
   const maxIndex = SECTIONS.length - 1;
   const clampIndex = (value) => clamp(value, 0, maxIndex);
 
-  // No RAF/lerp loop here anymore. Each step just moves activeIdx by
-  // one whole section; SectionCard's own CSS transition (see its
-  // .module.css) animates the transform/opacity/blur smoothly on the
-  // compositor, so React only re-renders once per section change
-  // instead of once per frame.
   const changeSection = (nextIndex) => {
     const target = clampIndex(nextIndex);
     setActiveIdx((current) => {
@@ -69,38 +95,35 @@ export default function MainLayout() {
     changeSection(index);
   };
 
-  const getScrollableAncestor = (el, boundary) => {
-    let node = el;
-    while (node && node !== boundary && node !== document.body) {
-      if (node instanceof HTMLElement) {
-        const style = window.getComputedStyle(node);
-        const canScrollY = /(auto|scroll)/.test(style.overflowY);
-        if (canScrollY && node.scrollHeight > node.clientHeight + 1) {
-          return node;
-        }
-      }
-      node = node.parentElement;
-    }
-    return null;
-  };
-
   useEffect(() => {
     const viewport = viewportRef.current;
     let globalScrollTimeout = null;
 
     const handleWheel = (e) => {
-      // Safety check: always clear any stuck states if the user stops scrolling for a moment
       clearTimeout(globalScrollTimeout);
       globalScrollTimeout = setTimeout(() => {
         innerScrollCooldownRef.current = false;
         isTransitioningRef.current = false;
       }, 200);
 
-      // Get the scrollable content element under the mouse cursor
-      const scrollEl = getScrollableAncestor(e.target, viewport);
+      const isHorizontalDominant = Math.abs(e.deltaX) > Math.abs(e.deltaY);
 
-      if (scrollEl) {
-        const { scrollTop, scrollHeight, clientHeight } = scrollEl;
+      // 1. HORIZONTAL INTENT
+      if (isHorizontalDominant) {
+        const scrollXEl = getScrollableAncestorX(e.target, viewport);
+        if (scrollXEl) {
+          innerScrollCooldownRef.current = true;
+          clearTimeout(innerScrollTimeoutRef.current);
+          return; // Let table/code block scroll natively horizontally
+        }
+      }
+
+      // 2. VERTICAL INTENT
+      // Walk up the DOM specifically looking for a VERTICALLY scrollable parent (e.g. Chat list container)
+      const scrollYEl = getScrollableAncestorY(e.target, viewport);
+
+      if (scrollYEl) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollYEl;
         const atTop = scrollTop <= 0;
         const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
         const scrollingDown = e.deltaY > 0;
@@ -110,13 +133,11 @@ export default function MainLayout() {
           (scrollingDown && !atBottom) || (scrollingUp && !atTop);
 
         if (innerCanStillScroll) {
-          // Let the inner element scroll naturally
           innerScrollCooldownRef.current = true;
           clearTimeout(innerScrollTimeoutRef.current);
-          return;
+          return; // Let chat container scroll natively vertically
         } else {
-          // Just hit the inner boundaries. Block section changes
-          // to absorb high velocity trackpad momentum ticks.
+          // Boundary hit: absorb fast trackpad momentum ticks
           if (innerScrollCooldownRef.current) {
             clearTimeout(innerScrollTimeoutRef.current);
             innerScrollTimeoutRef.current = setTimeout(() => {
@@ -129,13 +150,13 @@ export default function MainLayout() {
         }
       }
 
-      // Stop default page bouncing behavior
+      // 3. SECTION CHANGE
+      // Only runs if no inner container can scroll in the intended direction
       e.preventDefault();
 
       if (isTransitioningRef.current || innerScrollCooldownRef.current) return;
 
-      // Section swipe trigger
-      if (Math.abs(e.deltaY) > 18) {
+      if (Math.abs(e.deltaY) > 18 && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
         const direction = e.deltaY > 0 ? 1 : -1;
         changeSection(activeIdx + direction);
       }
@@ -155,18 +176,6 @@ export default function MainLayout() {
       className={styles["glass-wrapper"]}
       data-theme={isDarkMode ? "dark" : "light"}
     >
-      {/* <svg className={styles["svg-filter-hidden"]}>
-        <filter id="glass-grain">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.75"
-            numOctaves="3"
-            stitchTiles="stitch"
-          />
-          <feColorMatrix type="saturate" values="0" />
-        </filter>
-      </svg> */}
-
       <AmbientBackground />
 
       <main ref={viewportRef} className={styles["window-viewport"]}>

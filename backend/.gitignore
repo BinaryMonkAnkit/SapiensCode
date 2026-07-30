@@ -2,3 +2,8 @@
 .env
 __pycache__
 .vscode
+*.db
+chat_state.db
+*.db
+*.sqlite3
+*.sqlite

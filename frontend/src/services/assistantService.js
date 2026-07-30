@@ -14,7 +14,7 @@ export async function fetchAvailableModels() {
 }
 
 /**
- * Streams the assistant chat response.
+ * Streams the assistant chat response by parsing SSE event lines.
  */
 export async function streamChatAssistant(payload, onChunkReceived, onStreamComplete) {
   try {
@@ -27,12 +27,43 @@ export async function streamChatAssistant(payload, onChunkReceived, onStreamComp
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder("utf-8");
+    let buffer = ""; // Keeps track of split TCP network chunks
 
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
-      const chunk = decoder.decode(value, { stream: true });
-      if (chunk) onChunkReceived(chunk);
+
+      buffer += decoder.decode(value, { stream: true });
+
+      // Split SSE packets by line breaks
+      const lines = buffer.split("\n");
+      
+      // Save incomplete trailing chunk back to the buffer
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith("data: ")) continue;
+
+        const jsonStr = trimmed.replace(/^data:\s*/, "");
+
+        try {
+          const parsed = JSON.parse(jsonStr);
+
+          // 1. Handle Backend Errors Mid-Stream
+          if (parsed.error) {
+            onChunkReceived(`\n\n⚠️ **Error:** ${parsed.error}`);
+            continue;
+          }
+
+          // 2. Pass ONLY clean plain-text string chunk to UI
+          if (parsed.content) {
+            onChunkReceived(parsed.content);
+          }
+        } catch (err) {
+          console.error("Failed to parse SSE line:", trimmed, err);
+        }
+      }
     }
   } catch (error) {
     console.error("Streaming error:", error);

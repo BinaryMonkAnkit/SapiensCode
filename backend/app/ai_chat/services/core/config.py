@@ -4,9 +4,16 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        env_prefix="",
+    )
+
     # --- API Keys ---
-    GROQ_API_KEY: str = Field(default="", env="GROQ_API_KEY")
-    GOOGLE_API_KEY: str = Field(default="", env="GOOGLE_API_KEY")
+    GROQ_API_KEY: str = Field(default="", alias="GROQ_API_KEY")
+    GOOGLE_API_KEY: str = Field(default="", alias="GOOGLE_API_KEY")
 
     # --- Database Persistence ---
     # Path for SQLite checkpointer (replace with Postgres URL for multi-worker production)
@@ -55,8 +62,6 @@ class Settings(BaseSettings):
     DEFAULT_MODEL_ID: str = "groq/gpt-oss-120b"
     # Fast lightweight model for background summarization calls
     SUMMARIZER_MODEL_ID: str = "google/gemini-3.5-flash"
-
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
 settings = Settings()

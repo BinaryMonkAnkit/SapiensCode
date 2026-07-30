@@ -17,6 +17,7 @@ export default function ChatMessage({
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
+    if (!msg?.text) return;
     navigator.clipboard.writeText(msg.text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -27,13 +28,13 @@ export default function ChatMessage({
       <MessageEditor
         initialText={msg.text}
         onSave={(newText) => onSaveEdit(msg.id, newText)}
-        onCancel={() => onCancelEdit()}
+        onCancel={onCancelEdit}
       />
     );
   }
 
   const displayText =
-    isStreaming && isLastMessage && !msg.text ? "●" : msg.text;
+    isStreaming && isLastMessage && !msg.text ? "●" : msg.text || "";
 
   // Assign color-neutral background surfaces based on theme
   const themeClass =
@@ -59,7 +60,11 @@ export default function ChatMessage({
         )}
 
         <div className={styles["message-text"]}>
-          <MarkdownRenderer content={displayText} isDarkMode={isDarkMode} />
+          <MarkdownRenderer
+            content={displayText}
+            isDarkMode={isDarkMode}
+            isStreaming={isStreaming && isLastMessage}
+          />
         </div>
 
         <div
