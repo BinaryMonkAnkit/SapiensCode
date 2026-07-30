@@ -1,19 +1,113 @@
 /* ==========================================================================
+   Markdown Base Layout & Bullet Lists
+   ========================================================================== */
+.markdown-wrapper {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  color: var(--mrk-text, inherit);
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.markdown-wrapper > * {
+  min-width: 0;
+}
+
+.markdown-wrapper p {
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.markdown-wrapper p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-wrapper hr {
+  margin: 20px 0 !important;
+  border: none;
+  border-top: 1px solid var(--chat-border, rgba(255, 255, 255, 0.15));
+  display: block;
+  clear: both;
+}
+
+.markdown-wrapper h1,
+.markdown-wrapper h2,
+.markdown-wrapper h3,
+.markdown-wrapper h4,
+.markdown-wrapper strong {
+  line-height: 1.5;
+}
+
+.markdown-ul,
+.markdown-ol {
+  margin: 12px 0 16px 0 !important;
+  padding-left: 24px !important;
+  display: block !important;
+}
+
+.markdown-ul {
+  list-style-type: disc !important;
+}
+
+.markdown-ol {
+  list-style-type: decimal !important;
+}
+
+.markdown-li {
+  display: list-item !important;
+  margin-bottom: 8px !important;
+  line-height: 1.6;
+}
+
+.markdown-li strong {
+  font-weight: 600;
+  color: var(--chat-text-main, inherit);
+}
+
+/* ==========================================================================
+   The Scroll Container (Trackpad & Touch Optimized)
+   ========================================================================== */
+.code-block-scroll,
+.table-container {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  
+  /* Horizontal overflow enabled */
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+
+  /* Native gesture delegation: Allow multi-axis recognition to prevent trackpad lockup */
+  touch-action: pan-x pan-y !important;
+  overscroll-behavior-x: contain !important;
+  overscroll-behavior-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+
+  /* Smooth GPU compositing without breaking APZ scroll target calculations */
+  will-change: scroll-position;
+}
+
+/* ==========================================================================
    Code Block Container & Header
    ========================================================================== */
 .code-block-container {
   margin: 16px 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: block;
   border-radius: var(--mrk-radius, 12px);
   border: 1px solid var(--mrk-border, rgba(255, 255, 255, 0.1));
   background: var(--mrk-code-bg, #1e1e22);
-  backdrop-filter: var(--mrk-blur, blur(8px));
-  -webkit-backdrop-filter: var(--mrk-blur-webkit, blur(8px));
-  box-shadow:
-    0 12px 30px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
 }
 
 .code-block-header {
@@ -23,8 +117,6 @@
   padding: 10px 16px;
   background: var(--mrk-code-header-bg, rgba(0, 0, 0, 0.2));
   border-bottom: 1px solid var(--mrk-border, rgba(255, 255, 255, 0.08));
-  backdrop-filter: var(--mrk-blur, blur(8px));
-  -webkit-backdrop-filter: var(--mrk-blur-webkit, blur(8px));
   user-select: none;
 }
 
@@ -50,62 +142,73 @@
   color: var(--mrk-text-muted, #8e8e93);
   font-size: 12px;
   cursor: pointer;
-  transition: all var(--mrk-transition, 0.15s ease);
+  transition: all 0.15s ease;
 }
 
 .code-block-copy-btn:hover {
-  background: var(--mrk-hover, rgba(255, 255, 255, 0.08));
-  color: var(--mrk-text, #ffffff);
-}
-
-.code-block-scroll {
-  overflow-x: auto;
-  width: 100%;
-}
-
-/* Ensure raw streaming pre/code blocks match the syntax highlighter look */
-.code-block-scroll pre {
-  margin: 0;
-  padding: 18px;
-  font-size: 13.5px;
-  font-family: SFMono-Regular, Consolas, Menlo, Monaco, monospace;
-  line-height: 1.5;
-  color: var(--mrk-text, #e1e1e6);
-  background: transparent;
-  white-space: pre;
-  word-break: normal;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
 /* ==========================================================================
-   Inline Code & Tables
+   Code Block <pre> & <code> Formatting
    ========================================================================== */
-.inline-code {
-  padding: 2px 6px;
-  border-radius: 6px;
-  background: var(--mrk-inline-bg, rgba(255, 255, 255, 0.1));
-  font-family: SFMono-Regular, Consolas, Menlo, Monaco, monospace;
-  font-size: 13px;
+.code-block-scroll pre {
+  margin: 0;
+  padding: 16px;
+  display: block;
+  width: max-content;
+  min-width: 100%;
+  box-sizing: border-box;
+  white-space: pre;
+  word-break: normal;
+  word-wrap: normal;
 }
 
+.code-block-scroll code {
+  white-space: pre;
+  font-family: SFMono-Regular, Consolas, Menlo, Monaco, monospace;
+}
+
+.inline-code {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  font-family: SFMono-Regular, Consolas, Menlo, Monaco, monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ==========================================================================
+   HTML Markdown Tables
+   ========================================================================== */
 .table-container {
-  width: 100%;
-  overflow-x: auto;
   margin: 16px 0;
   border-radius: 8px;
   border: 1px solid var(--chat-border, rgba(255, 255, 255, 0.1));
 }
 
 .markdown-table {
-  width: 100%;
+  display: table !important;
+  width: max-content !important;
+  min-width: 100%;
+  max-width: none !important;
   border-collapse: collapse;
   font-size: 14px;
   text-align: left;
+  table-layout: auto;
+  box-sizing: border-box;
 }
 
 .markdown-table th,
 .markdown-table td {
   padding: 10px 14px;
   border-bottom: 1px solid var(--chat-border, rgba(255, 255, 255, 0.1));
+  vertical-align: top;
+  white-space: pre-wrap;
+  /* overflow-wrap: anywhere; */
+  word-break: break-word;
 }
 
 .markdown-table th {
@@ -126,4 +229,30 @@
 
 .markdown-table tr:nth-child(even) {
   background: rgba(0, 0, 0, 0.02);
+}
+
+/* ==========================================================================
+   Custom Scrollbar Styling
+   ========================================================================== */
+.code-block-scroll::-webkit-scrollbar,
+.table-container::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.code-block-scroll::-webkit-scrollbar-track,
+.table-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.code-block-scroll::-webkit-scrollbar-thumb,
+.table-container::-webkit-scrollbar-thumb {
+  background-color: rgba(140, 140, 140, 0.35);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.code-block-scroll::-webkit-scrollbar-thumb:hover,
+.table-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(140, 140, 140, 0.6);
 }
