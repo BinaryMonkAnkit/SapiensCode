@@ -50,43 +50,62 @@
 }
 
 /* ==========================================================================
-   Textarea Placeholder & Height Auto-Expansion
+   Textarea & Modernized Aesthetic Scrollbar
    ========================================================================== */
 .textarea {
-  scrollbar-width: thin;
-  scrollbar-gutter: stable;
-  overflow-y: hidden; /* Hides scrollbar when expanding height for placeholder */
-}
-
-/* Display scrollbars only when content exceeds 45vh */
-.textarea:focus,
-.textarea:hover {
   overflow-y: auto;
+  scrollbar-width: thin; /* Firefox: Thin modern scrollbar */
+  padding-right: 6px;
 }
 
-/* Chrome, Safari, Edge Scrollbar */
+/* Firefox Theme Adaptation */
+.textareaDark {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.textareaLight {
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+/* WebKit (Chrome, Safari, Edge) Scrollbar Base */
 .textarea::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .textarea::-webkit-scrollbar-track {
   background: transparent;
+  margin: 6px 0;
 }
 
 .textarea::-webkit-scrollbar-thumb {
-  border-radius: 99px;
-  background-color: transparent;
-  transition: background-color 0.2s ease;
+  border-radius: 9999px;
+  background-clip: padding-box;
 }
 
-.textareaDark:hover::-webkit-scrollbar-thumb,
-.textareaDark:focus::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
+/* Light Mode WebKit Thumb States */
+.textareaLight::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.18);
 }
 
-.textareaLight:hover::-webkit-scrollbar-thumb,
-.textareaLight:focus::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
+.textareaLight::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.38);
+}
+
+.textareaLight::-webkit-scrollbar-thumb:active {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+/* Dark Mode WebKit Thumb States */
+.textareaDark::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+.textareaDark::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.45);
+}
+
+.textareaDark::-webkit-scrollbar-thumb:active {
+  background-color: rgba(255, 255, 255, 0.65);
 }
 
 /* ==========================================================================
