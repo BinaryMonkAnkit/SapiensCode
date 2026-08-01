@@ -1,34 +1,26 @@
-"""
-Production-grade backend: runs submitted code inside a fresh, locked-down
-Docker container per run, instead of running the interpreter directly on
-the host.
+import sys
+import asyncio
 
-Run with:
-    uvicorn app.main:app --port 8000
-"""
-import uvicorn
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.code_execution.router import router as terminal_router
 from app.ai_chat.router import router as assistant_router
 
-# Initialize the main FastAPI app
 app = FastAPI(
     title="Online Code Editor with AI Assistance",
     version="1.0.0",
-    description="Production-ready FastAPI services")
+    description="Production-ready FastAPI services",
+)
 
-# Setup CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://sapienscode.pages.dev"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Health check router
 health_router = APIRouter(tags=["Health"])
 
 
@@ -37,12 +29,26 @@ async def health():
     return {"status": "ok"}
 
 
-# Mount all routers
 app.include_router(health_router)
 app.include_router(terminal_router)
 app.include_router(assistant_router)
 
 
-
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    if sys.platform == "win32":
+        # uvicorn's --reload forces SelectorEventLoop on Windows, which cannot
+        # spawn subprocesses (needed for the Docker sandbox runner). Run the
+        # server via a ProactorEventLoop directly instead of uvicorn.run(reload=True).
+        from uvicorn import Config, Server
+
+        class ProactorServer(Server):
+            def run(self, sockets=None):
+                loop = asyncio.ProactorEventLoop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(self.serve(sockets=sockets))
+
+        config = Config("main:app", host="0.0.0.0", port=8000, reload=False)
+        ProactorServer(config=config).run()
+    else:
+        import uvicorn
+        uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
