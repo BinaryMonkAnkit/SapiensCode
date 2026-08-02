@@ -3,7 +3,7 @@ import PromptBarIcons from "./PromptBarIcons";
 import styles from "./PromptBar.module.css";
 
 export default function PromptBar({
-  placeholder = "Ask your query to get help from an AI.",
+  placeholder = "Ask a question, analyze code, or brainstorm...",
   onSubmit = () => {},
   isDarkMode,
   disabled,

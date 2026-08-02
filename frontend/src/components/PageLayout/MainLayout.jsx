@@ -115,59 +115,111 @@ export default function MainLayout() {
         isTransitioningRef.current = false;
       }, 200);
 
-      const isHorizontalDominant = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+      const isSmallScreen = window.innerWidth <= 768;
 
-      // 1. HORIZONTAL INTENT
-      if (isHorizontalDominant) {
-        const scrollXEl = getScrollableAncestorX(e.target, viewport);
-        if (scrollXEl) {
-          innerScrollCooldownRef.current = true;
-          clearTimeout(innerScrollTimeoutRef.current);
-          return; // Let table/code block scroll natively horizontally
-        }
-      }
+      if (isSmallScreen) {
+        // --- MOBILE/SMALL SCREEN LOGIC (Horizontal Section Transitions) ---
+        const effectiveDeltaX =
+          Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        const isVerticalDominant = Math.abs(e.deltaY) > Math.abs(e.deltaX);
 
-      // 2. VERTICAL INTENT
-      // Walk up the DOM specifically looking for a VERTICALLY scrollable parent (e.g. Chat list container)
-      const scrollYEl = getScrollableAncestorY(e.target, viewport);
-
-      if (scrollYEl) {
-        const { scrollTop, scrollHeight, clientHeight } = scrollYEl;
-        const atTop = scrollTop <= 0;
-        const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
-        const scrollingDown = e.deltaY > 0;
-        const scrollingUp = e.deltaY < 0;
-
-        const innerCanStillScroll =
-          (scrollingDown && !atBottom) || (scrollingUp && !atTop);
-
-        if (innerCanStillScroll) {
-          innerScrollCooldownRef.current = true;
-          clearTimeout(innerScrollTimeoutRef.current);
-          return; // Let chat container scroll natively vertically
-        } else {
-          // Boundary hit: absorb fast trackpad momentum ticks
-          if (innerScrollCooldownRef.current) {
+        if (isVerticalDominant) {
+          const scrollYEl = getScrollableAncestorY(e.target, viewport);
+          if (scrollYEl) {
+            innerScrollCooldownRef.current = true;
             clearTimeout(innerScrollTimeoutRef.current);
-            innerScrollTimeoutRef.current = setTimeout(() => {
-              innerScrollCooldownRef.current = false;
-            }, SCROLL_CONFIG.innerScrollLeakyDelay);
-
-            e.preventDefault();
             return;
           }
         }
-      }
 
-      // 3. SECTION CHANGE
-      // Only runs if no inner container can scroll in the intended direction
-      e.preventDefault();
+        const scrollXEl = getScrollableAncestorX(e.target, viewport);
+        if (scrollXEl) {
+          const { scrollLeft, scrollWidth, clientWidth } = scrollXEl;
+          const atLeft = scrollLeft <= 0;
+          const atRight = scrollLeft + clientWidth >= scrollWidth - 1;
+          const scrollingRight = effectiveDeltaX > 0;
+          const scrollingLeft = effectiveDeltaX < 0;
 
-      if (isTransitioningRef.current || innerScrollCooldownRef.current) return;
+          const innerCanStillScroll =
+            (scrollingRight && !atRight) || (scrollingLeft && !atLeft);
 
-      if (Math.abs(e.deltaY) > 18 && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        const direction = e.deltaY > 0 ? 1 : -1;
-        changeSection(activeIdx + direction);
+          if (innerCanStillScroll) {
+            innerScrollCooldownRef.current = true;
+            clearTimeout(innerScrollTimeoutRef.current);
+            return;
+          } else {
+            if (innerScrollCooldownRef.current) {
+              clearTimeout(innerScrollTimeoutRef.current);
+              innerScrollTimeoutRef.current = setTimeout(() => {
+                innerScrollCooldownRef.current = false;
+              }, SCROLL_CONFIG.innerScrollLeakyDelay);
+
+              e.preventDefault();
+              return;
+            }
+          }
+        }
+
+        e.preventDefault();
+        if (isTransitioningRef.current || innerScrollCooldownRef.current)
+          return;
+
+        if (Math.abs(effectiveDeltaX) > 18) {
+          const direction = effectiveDeltaX > 0 ? 1 : -1;
+          changeSection(activeIdx + direction);
+        }
+      } else {
+        // --- DESKTOP LOGIC (Original Vertical Section Transitions) ---
+        const isHorizontalDominant = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+
+        if (isHorizontalDominant) {
+          const scrollXEl = getScrollableAncestorX(e.target, viewport);
+          if (scrollXEl) {
+            innerScrollCooldownRef.current = true;
+            clearTimeout(innerScrollTimeoutRef.current);
+            return;
+          }
+        }
+
+        const scrollYEl = getScrollableAncestorY(e.target, viewport);
+        if (scrollYEl) {
+          const { scrollTop, scrollHeight, clientHeight } = scrollYEl;
+          const atTop = scrollTop <= 0;
+          const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+          const scrollingDown = e.deltaY > 0;
+          const scrollingUp = e.deltaY < 0;
+
+          const innerCanStillScroll =
+            (scrollingDown && !atBottom) || (scrollingUp && !atTop);
+
+          if (innerCanStillScroll) {
+            innerScrollCooldownRef.current = true;
+            clearTimeout(innerScrollTimeoutRef.current);
+            return;
+          } else {
+            if (innerScrollCooldownRef.current) {
+              clearTimeout(innerScrollTimeoutRef.current);
+              innerScrollTimeoutRef.current = setTimeout(() => {
+                innerScrollCooldownRef.current = false;
+              }, SCROLL_CONFIG.innerScrollLeakyDelay);
+
+              e.preventDefault();
+              return;
+            }
+          }
+        }
+
+        e.preventDefault();
+        if (isTransitioningRef.current || innerScrollCooldownRef.current)
+          return;
+
+        if (
+          Math.abs(e.deltaY) > 18 &&
+          Math.abs(e.deltaY) > Math.abs(e.deltaX)
+        ) {
+          const direction = e.deltaY > 0 ? 1 : -1;
+          changeSection(activeIdx + direction);
+        }
       }
     };
 

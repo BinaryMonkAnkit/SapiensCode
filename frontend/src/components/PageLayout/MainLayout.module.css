@@ -1,5 +1,4 @@
-/* MainLayout.module.css */
-
+/* Desktop default layout (Side dock intact) */
 .glass-wrapper {
   position: relative;
   width: 100vw;
@@ -9,12 +8,12 @@
   color: var(--text-primary);
   transition: background-color 0.5s ease, color 0.5s ease;
   display: flex;
-  flex-direction: row;
+  flex-direction: row; /* Desktop: dock on left/side */
 }
 
 .window-viewport {
   position: relative;
-  flex: 1;               /* Occupies all available space next to RightDock */
+  flex: 1;               /* Occupies available space next to RightDock */
   width: 100%;           /* Explicit width */
   min-width: 0;          /* CRITICAL: Overrides flexbox min-width auto overflow bug */
   height: 100vh;
@@ -29,7 +28,14 @@
   overflow: hidden;      /* Prevents neighbor sections from leaking into view */
 }
 
+/* Small Screens / Mobile Only (< 768px) */
+@media (max-width: 768px) {
+  .glass-wrapper {
+    flex-direction: column-reverse; /* Dock moves to top, main content below */
+  }
 
-/* .svg-filter-hidden {
-  display: none;
-} */
+  .window-viewport {
+    height: calc(100vh - 60px);
+    max-height: calc(100vh - 60px);
+  }
+}

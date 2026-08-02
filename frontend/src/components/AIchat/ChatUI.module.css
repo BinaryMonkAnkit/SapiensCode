@@ -15,20 +15,6 @@
   min-width: 0 !important;
 }
 
-.chat-header-chrome {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 20;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  box-sizing: border-box;
-  border-bottom: 1px solid var(--chat-border);
-}
 
 .chrome-title {
   font-size: 13px;

@@ -1,3 +1,7 @@
+/* ==========================================================================
+   DESKTOP DEFAULT STYLES (Vertical Right Side Dock)
+   ========================================================================== */
+
 .right-dock {
   position: relative;
   flex-shrink: 0;
@@ -5,6 +9,7 @@
   top: 0;
   bottom: 0;
   width: 40px;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -17,6 +22,31 @@
   border-left: 1px solid var(--dock-border);
   color: var(--text-primary);
   z-index: 100;
+}
+
+.dock-btn {
+  background: transparent;
+  border: none;
+  color: var(--dock-icon-idle);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Container holding Chat, Editor, Docs icons */
+.dots-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.dock-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dock-icon-btn {
@@ -40,9 +70,6 @@
   filter: drop-shadow(0 0 8px var(--dock-accent-glow));
 }
 
-/* Active section icon only: raised silver glow on the symbol itself,
-   no background pill. Values are split per theme below so the glow
-   reads correctly against both a dark and a light dock background. */
 .dock-icon-active {
   transform: translateY(-2px) scale(1.18);
 }
@@ -77,37 +104,34 @@
     drop-shadow(0 4px 5px rgba(15, 23, 42, 0.2));
 }
 
+/* MINIMAL CLAUDE-STYLE TOOLTIP */
 .dock-tooltip {
   position: absolute;
-  right: calc(100% + 10px);
+  right: calc(100% + 8px);
   top: 50%;
-  transform: translate(6px, -50%);
+  transform: translate(4px, -50%);
   white-space: nowrap;
-  background: var(--dock-tooltip-bg);
-  color: var(--dock-tooltip-fg);
-  font-size: 12px;
+  background: var(--dock-tooltip-bg, rgba(15, 23, 42, 0.88));
+  color: var(--dock-tooltip-fg, #f8fafc);
+  border: 1px solid var(--dock-border, rgba(255, 255, 255, 0.1));
+  font-size: 11px;
   font-weight: 500;
-  padding: 5px 10px;
+  letter-spacing: 0.02em;
+  padding: 4px 8px;
   border-radius: 6px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 200;
 }
 
-.dock-tooltip::after {
-  content: "";
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 5px solid transparent;
-  border-left-color: var(--dock-tooltip-bg);
-}
-
-.dock-icon-btn:hover .dock-tooltip {
-  opacity: 1;
-  transform: translate(0, -50%);
+/* Hover trigger for desktop pointer devices only */
+@media (hover: hover) and (pointer: fine) {
+  .dock-icon-btn:hover .dock-tooltip {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
 }
 
 .theme-toggle-btn {
@@ -125,4 +149,42 @@
 
 .theme-toggle-btn:hover {
   transform: scale(1.08);
+}
+
+/* ==========================================================================
+   SMALL SCREEN OVERRIDES (Horizontal Top Dock)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .right-dock {
+    width: 100vw;
+    height: 56px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-left: none;
+    border-bottom: 1px solid var(--dock-border);
+  }
+
+  /* Force icon group into a horizontal row */
+  .dots-column {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+
+  /* Tooltip repositioning under top bar */
+  .dock-tooltip {
+    right: auto;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translate(-50%, -4px);
+  }
+
+  /* Active class applied during touch hold */
+  .show-touch-tooltip {
+    opacity: 1 !important;
+    transform: translate(-50%, 0) !important;
+  }
 }
