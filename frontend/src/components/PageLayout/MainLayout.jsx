@@ -13,25 +13,6 @@ const SCROLL_CONFIG = {
   innerScrollLeakyDelay: 350,
 };
 
-const SECTIONS = [
-  {
-    id: "chat",
-    icon: MessageSquare,
-    content: (isDarkMode) => <ChatUI isDarkMode={isDarkMode} />,
-  },
-  {
-    id: "editor",
-    icon: Code,
-    content: (isDarkMode) => <CodeWorkspace isDarkMode={isDarkMode} />,
-  },
-  {
-    id: "docs",
-    icon: FileText,
-    content: (isDarkMode) => <Documentation isDarkMode={isDarkMode} />,
-    hideChrome: true,
-  },
-];
-
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 // Separate DOM traversals for vertical vs horizontal scroll ancestors
@@ -73,6 +54,34 @@ export default function MainLayout() {
   const innerScrollCooldownRef = useRef(false);
   const innerScrollTimeoutRef = useRef(null);
   const viewportRef = useRef(null);
+
+  const getEditorCodeRef = useRef(null);
+
+  const SECTIONS = [
+    {
+      id: "chat",
+      icon: MessageSquare,
+      content: (isDarkMode) => (
+        <ChatUI isDarkMode={isDarkMode} getEditorCodeRef={getEditorCodeRef} />
+      ),
+    },
+    {
+      id: "editor",
+      icon: Code,
+      content: (isDarkMode) => (
+        <CodeWorkspace
+          isDarkMode={isDarkMode}
+          getEditorCodeRef={getEditorCodeRef}
+        />
+      ),
+    },
+    {
+      id: "docs",
+      icon: FileText,
+      content: (isDarkMode) => <Documentation isDarkMode={isDarkMode} />,
+      hideChrome: true,
+    },
+  ];
 
   const maxIndex = SECTIONS.length - 1;
   const clampIndex = (value) => clamp(value, 0, maxIndex);

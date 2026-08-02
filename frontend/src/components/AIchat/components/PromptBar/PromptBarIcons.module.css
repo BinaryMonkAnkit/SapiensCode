@@ -1,32 +1,188 @@
+/* Container Layout */
 .iconCapsule {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  gap: 12px;
+}
+
+.leftGroup,
+.rightGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Minimal Claude-style Model Selector Trigger override */
+.minimalModelWrapper {
+  display: flex;
+  align-items: center;
+}
+
+.minimalModelWrapper button,
+.minimalModelWrapper [class*="trigger"],
+.minimalModelWrapper [class*="selector"] {
+  height: 32px !important;
+  padding: 0 10px !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  border: none !important;
+  background: transparent !important;
+  transition: background 0.15s ease !important;
+}
+
+.darkTheme .minimalModelWrapper button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.lightTheme .minimalModelWrapper button:hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Tooltip System */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px) scale(0.96);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.darkTheme [data-tooltip]::before {
+  background: #27272a;
+  color: #f4f4f5;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lightTheme [data-tooltip]::before {
+  background: #18181b;
+  color: #ffffff;
+}
+
+[data-tooltip]:hover::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* macOS Style Code Toggle Switch */
+.codeToggleContainer {
+  display: flex;
+  align-items: center;
+}
+
+.macToggleLabel {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: transparent;
-  justify-content: flex-end;
-  max-width: 100%;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
 }
 
-.iconCapsuleHorizontal {
-  flex-direction: row;
+.darkTheme .toggleText {
+  color: #a1a1aa;
 }
 
-.iconCapsuleFull {
-  width: 100%;
-  justify-content: flex-end;
+.lightTheme .toggleText {
+  color: #71717a;
 }
 
+.macToggleInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.macToggleTrack {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  border-radius: 999px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  display: inline-block;
+}
+
+/* Dark Theme Toggle Colors */
+.darkTheme .macToggleTrack {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.darkTheme .macToggleInput:checked + .macToggleTrack {
+  background-color: #ffffff;
+}
+
+.darkTheme .macToggleThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+.darkTheme .macToggleInput:checked + .macToggleTrack .macToggleThumb {
+  transform: translateX(14px);
+  background-color: #000000;
+}
+
+/* Light Theme Toggle Colors */
+.lightTheme .macToggleTrack {
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+.lightTheme .macToggleInput:checked + .macToggleTrack {
+  background-color: #000000;
+}
+
+.lightTheme .macToggleThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #000000;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+.lightTheme .macToggleInput:checked + .macToggleTrack .macToggleThumb {
+  transform: translateX(14px);
+  background-color: #ffffff;
+}
+
+/* Base Buttons & Effects */
 .capsuleBtn {
   position: relative;
   background: transparent;
   border: none;
-  padding: 8px;
-  border-radius: 10px;
+  padding: 6px;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.12s ease, opacity 0.12s ease;
+  transition: transform 0.12s ease, opacity 0.12s ease, background 0.15s ease;
   color: inherit;
 }
 
@@ -35,105 +191,34 @@
   z-index: 2;
 }
 
-.capsuleBtn::before {
-  content: "";
-  position: absolute;
-  inset: -10px;
-  border-radius: 14px;
-  pointer-events: none;
-  background: radial-gradient(circle, rgba(56, 139, 253, 0.18), transparent 40%);
-  opacity: 0;
-  filter: blur(18px);
-  transition: opacity 0.24s ease, transform 0.24s ease;
-  z-index: 0;
+.darkTheme .capsuleBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.capsuleBtn:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-.capsuleBtn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
-}
-
-.capsuleBtn:hover {
-  transform: translateY(-1px);
+.lightTheme .capsuleBtn:hover {
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .capsuleBtn:active {
   transform: scale(0.92);
 }
 
-.capsuleBtn::after {
-  content: "";
-  position: absolute;
-  inset: -6px;
-  border-radius: 12px;
-  pointer-events: none;
-  background: radial-gradient(circle, rgba(56, 139, 253, 0.24), transparent 45%);
-  opacity: 0;
-  filter: blur(14px);
-  transition: opacity 0.22s ease, transform 0.22s ease;
-  z-index: 0;
-}
-
-.capsuleBtn:active::after {
-  opacity: 0.8;
-  transform: scale(1.4);
-}
-
-/* Mic Recording Voice Wave Effect Indicator */
-.micListening {
-  color: #ef4444 !important;
-  animation: mic-pulse 1.4s ease-in-out infinite alternate;
-}
-
-.micListening::before {
-  content: "";
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(239, 68, 68, 0.4), transparent 70%);
-  opacity: 1;
-  filter: blur(4px);
-  animation: voice-wave 1.2s infinite ease-in-out;
-  z-index: 1;
-}
-
-@keyframes mic-pulse {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.12); }
-}
-
-@keyframes voice-wave {
-  0% { transform: scale(0.9); opacity: 0.8; }
-  50% { transform: scale(1.6); opacity: 0.4; }
-  100% { transform: scale(2.1); opacity: 0; }
-}
-
-.capsuleDivider {
-  width: 1px;
-  height: 22px;
-  background: rgba(0, 0, 0, 0.06);
-  border-radius: 2px;
-}
-
 .sendBtn {
   position: relative;
+  border-radius: 8px;
+  padding: 6px;
 }
 
 .sendLight::after,
 .sendDark::after {
   content: "";
   position: absolute;
-  inset: -8px;
+  inset: -6px;
   border-radius: 10px;
   z-index: 0;
-  filter: blur(16px);
+  filter: blur(12px);
   transition: transform 0.24s ease, opacity 0.24s ease;
-  opacity: 0.75;
+  opacity: 0.6;
 }
 
 .sendLight::after {
@@ -144,23 +229,14 @@
   background: radial-gradient(circle, rgba(56, 139, 253, 0.45), transparent 35%);
 }
 
-.sendLight:hover::after {
-  transform: scale(1.14);
-  opacity: 1;
-}
-
+.sendLight:hover::after,
 .sendDark:hover::after {
-  transform: scale(1.16);
+  transform: scale(1.1);
   opacity: 1;
 }
 
 .sendBtn:active {
   transform: scale(0.9);
-}
-
-.sendBtn:active::after {
-  opacity: 0.95;
-  transform: scale(1.55);
 }
 
 /* Fog Animation */
@@ -205,33 +281,22 @@
   background: radial-gradient(circle at 50% 30%, rgba(56, 139, 253, 0.42), transparent 40%);
 }
 
-/* lottie */
+/* Lottie Active Voice Indicator */
 .micActive {
-  padding: 6px 16px;
+  padding: 4px 12px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 999px;
-  transform: translateY(-2px);
-  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  transform: translateY(-1px);
+  transition: transform 0.2s ease, background 0.2s ease;
 }
-
-.micActive::before,
-.micActive::after {
-  content: none;
-}
-
-
 
 .micActiveDark:hover {
   background: rgba(255, 255, 255, 0.14);
-  transform: translateY(-3px);
 }
-
-
 
 .micActiveLight:hover {
   background: rgba(0, 0, 0, 0.1);
-  transform: translateY(-3px);
 }
 
 .lottieWrap {
@@ -239,7 +304,7 @@
   align-items: center;
   justify-content: center;
   width: 72px;
-  height: 36px;
+  height: 32px;
   position: relative;
   z-index: 2;
 }

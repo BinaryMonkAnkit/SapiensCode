@@ -1,70 +1,151 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronDown } from "lucide-react";
+import { createPortal } from "react-dom";
+import { ChevronDown, Check } from "lucide-react";
 import styles from "./ModelSelector.module.css";
 
 export default function ModelSelector({
-  models,
+  models = [],
   selectedModel,
   onModelChange,
   isStreaming,
+  isDarkMode = true,
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [menuStyle, setMenuStyle] = useState({ top: 0, left: 0 });
+  const buttonRef = useRef(null);
+  const menuRef = useRef(null);
 
-  // --- 1. HOOKS MUST COME FIRST BEFORE ANY CONDITIONAL RETURNS ---
+  const calculatePosition = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setMenuStyle({
+        top: rect.top - 8,
+        left: rect.left,
+      });
+    }
+  };
+
+  const handleToggle = () => {
+    if (!isOpen) {
+      calculatePosition();
+    }
+    setIsOpen((prev) => !prev);
+  };
+
+  // Close menu instantly on ANY scroll, wheel, or swipe outside the dropdown list
   useEffect(() => {
+    if (!isOpen) return;
+
+    const handleDismissOnScroll = (event) => {
+      // Don't close if the user is scrolling inside the actual dropdown menu list
+      if (menuRef.current && menuRef.current.contains(event.target)) {
+        return;
+      }
+      setIsOpen(false);
+    };
+
+    // 'true' forces capture phase so nested divs (like chat workspace/lane) trigger this instantly
+    window.addEventListener("scroll", handleDismissOnScroll, true);
+    window.addEventListener("wheel", handleDismissOnScroll, true);
+    window.addEventListener("touchmove", handleDismissOnScroll, true);
+    window.addEventListener("resize", handleDismissOnScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleDismissOnScroll, true);
+      window.removeEventListener("wheel", handleDismissOnScroll, true);
+      window.removeEventListener("touchmove", handleDismissOnScroll, true);
+      window.removeEventListener("resize", handleDismissOnScroll);
+    };
+  }, [isOpen]);
+
+  // Click outside listener
+  useEffect(() => {
+    if (!isOpen) return;
+
     function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target) &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target)
+      ) {
         setIsOpen(false);
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
-  // --- 2. NOW IT IS SAFE TO RETURN EARLY IF DATA IS MISSING ---
   if (!models || models.length === 0) return null;
 
   const currentModelObj =
     models.find((m) => m.id === selectedModel) || models[0];
 
+  const getShortName = (name = "") => {
+    if (!name) return "Model";
+    const firstWord = name.split(/[\s-(]/)[0];
+    return firstWord || name;
+  };
+
   return (
-    <div className={styles["model-selector-container"]} ref={dropdownRef}>
-      {/* Trigger Button */}
+    <div
+      className={`${styles.container} ${
+        isDarkMode ? styles.darkTheme : styles.lightTheme
+      }`}
+    >
       <button
+        ref={buttonRef}
         type="button"
         disabled={isStreaming}
-        className={`${styles["model-capsule-wrapper"]} ${isOpen ? styles["active"] : ""}`}
-        onClick={() => setIsOpen(!isOpen)}
+        className={`${styles.capsuleWrapper} ${isOpen ? styles.active : ""}`}
+        onClick={handleToggle}
+        title={currentModelObj?.name}
       >
-        <span className={styles["selected-text"]}>{currentModelObj?.name}</span>
+        <span className={styles.selectedText}>
+          {getShortName(currentModelObj?.name)}
+        </span>
         <ChevronDown
-          size={14}
-          className={`${styles["select-arrow-icon"]} ${isOpen ? styles["rotated"] : ""}`}
+          size={13}
+          className={`${styles.arrowIcon} ${isOpen ? styles.rotated : ""}`}
         />
       </button>
 
-      {/* Blurry Custom Dropdown Menu List */}
-      {isOpen && (
-        <ul className={styles["dropdown-list-menu"]}>
-          {models.map((model) => (
-            <li key={model.id}>
-              <button
-                type="button"
-                className={`${styles["dropdown-item-btn"]} ${
-                  model.id === selectedModel ? styles["selected-item"] : ""
-                }`}
-                onClick={() => {
-                  onModelChange(model.id);
-                  setIsOpen(false);
-                }}
-              >
-                {model.name}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      {isOpen &&
+        createPortal(
+          <ul
+            ref={menuRef}
+            className={`${styles.selectMenu} ${
+              isDarkMode ? styles.darkTheme : styles.lightTheme
+            }`}
+            style={{
+              top: `${menuStyle.top}px`,
+              left: `${menuStyle.left}px`,
+            }}
+          >
+            {models.map((model) => {
+              const isSelected = model.id === selectedModel;
+              return (
+                <li
+                  key={model.id}
+                  className={`${styles.selectOption} ${
+                    isSelected ? styles.selectOptionActive : ""
+                  }`}
+                  onClick={() => {
+                    onModelChange(model.id);
+                    setIsOpen(false);
+                  }}
+                >
+                  <span className={styles.selectOptionLabel}>{model.name}</span>
+                  {isSelected && (
+                    <Check size={14} className={styles.checkIcon} />
+                  )}
+                </li>
+              );
+            })}
+          </ul>,
+          document.body,
+        )}
     </div>
   );
 }

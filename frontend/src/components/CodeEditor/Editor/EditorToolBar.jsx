@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { Play, Square } from "lucide-react";
-// import "../../styles/tokens.css";
 import styles from "./EditorToolBar.module.css";
 import {
   python,
@@ -11,7 +10,6 @@ import {
   java,
 } from "../../../assets/programmingLang/langSVG/LangIconExporter.js";
 
-// 1. Updated to include SVG paths instead of badge colors
 export const LANGUAGES = [
   {
     value: "py",
@@ -65,6 +63,7 @@ const EditorToolbar = ({
   const langButtonRef = useRef(null);
   const langMenuRef = useRef(null);
 
+  // 1. Handle outside click & Escape key
   useEffect(() => {
     const handleClickOutside = (e) => {
       const clickedTrigger =
@@ -86,6 +85,33 @@ const EditorToolbar = ({
     };
   }, []);
 
+  // 2. Automatically close menu on ANY scroll/wheel/touchmove outside the dropdown menu
+  useEffect(() => {
+    if (!isLangOpen) return;
+
+    const handleDismissOnScroll = (event) => {
+      // Don't close if scrolling happens INSIDE the dropdown options list itself
+      if (langMenuRef.current && langMenuRef.current.contains(event.target)) {
+        return;
+      }
+      setIsLangOpen(false);
+    };
+
+    // 'true' uses capture phase to catch scrolls on any nested container or main window
+    window.addEventListener("scroll", handleDismissOnScroll, true);
+    window.addEventListener("wheel", handleDismissOnScroll, true);
+    window.addEventListener("touchmove", handleDismissOnScroll, true);
+    window.addEventListener("resize", handleDismissOnScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleDismissOnScroll, true);
+      window.removeEventListener("wheel", handleDismissOnScroll, true);
+      window.removeEventListener("touchmove", handleDismissOnScroll, true);
+      window.removeEventListener("resize", handleDismissOnScroll);
+    };
+  }, [isLangOpen]);
+
+  // 3. Compute menu position when opened
   useLayoutEffect(() => {
     if (!isLangOpen || !langButtonRef.current) return;
 
@@ -107,23 +133,6 @@ const EditorToolbar = ({
     };
 
     updatePosition();
-    window.addEventListener("resize", updatePosition);
-    window.addEventListener("scroll", updatePosition, true);
-
-    let frame;
-    let ticks = 0;
-    const tick = () => {
-      updatePosition();
-      ticks += 1;
-      if (ticks < 30) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-
-    return () => {
-      window.removeEventListener("resize", updatePosition);
-      window.removeEventListener("scroll", updatePosition, true);
-      cancelAnimationFrame(frame);
-    };
   }, [isLangOpen]);
 
   const currentLanguage = LANGUAGES.find((lang) => lang.value === language);
@@ -150,7 +159,6 @@ const EditorToolbar = ({
             aria-expanded={isLangOpen}
             aria-label="Programming language"
           >
-            {/* 🟢 RENDER ACTIVE ICON AS COMPONENT */}
             {currentLanguage && (
               <currentLanguage.icon className={styles.langIcon} />
             )}
@@ -205,9 +213,6 @@ const EditorToolbar = ({
               >
                 {LANGUAGES.map((lang) => {
                   const isActive = lang.value === language;
-                  {
-                    /* Store Icon component in capitalized variable */
-                  }
                   const IconComponent = lang.icon;
 
                   return (
@@ -228,7 +233,6 @@ const EditorToolbar = ({
                         data-active={isActive}
                       />
 
-                      {/* 🟢 RENDER MENU OPTION ICON AS COMPONENT */}
                       <IconComponent className={styles.langIcon} />
 
                       <span className={styles.selectOptionLabel}>
@@ -243,7 +247,7 @@ const EditorToolbar = ({
         </div>
       </div>
 
-      {/* Right items (Shortcut hint & Run/Stop button) */}
+      {/* Right items */}
       <div className={styles.toolbarRight}>
         <span className={styles.shortcutHint}>⌘/Ctrl + ⏎ to run</span>
         <button

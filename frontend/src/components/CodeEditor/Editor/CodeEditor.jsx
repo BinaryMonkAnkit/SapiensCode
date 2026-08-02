@@ -27,6 +27,7 @@ const CodeEditor = ({
   onRun,
   onStop,
   onEditorLayoutRef,
+  getEditorCodeRef,
 }) => {
   const editorRef = useRef(null);
   const codeAreaRef = useRef(null);
@@ -46,6 +47,15 @@ const CodeEditor = ({
       };
     }
   }, [onEditorLayoutRef]);
+
+  // Expose a function to get the latest editor code
+  useEffect(() => {
+    if (getEditorCodeRef) {
+      getEditorCodeRef.current = () => {
+        return editorRef.current?.getValue() ?? "";
+      };
+    }
+  }, [getEditorCodeRef]);
 
   //handler
   const handleEditorDidMount = createEditorMountHandler({

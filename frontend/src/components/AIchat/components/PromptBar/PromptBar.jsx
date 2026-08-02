@@ -6,6 +6,12 @@ export default function PromptBar({
   placeholder = "Ask your query to get help from an AI.",
   onSubmit = () => {},
   isDarkMode,
+  disabled,
+  includeCode = true,
+  isStreaming,
+  setIncludeCode = () => {},
+  selectedModel,
+  setSelectedModel,
   onLayoutChange = () => {},
 }) {
   const [value, setText] = useState("");
@@ -165,8 +171,9 @@ export default function PromptBar({
             rows={1}
             value={value}
             onChange={(e) => {
-              setText(e.target.value);
-              initialTextRef.current = e.target.value;
+              const newValue = e.target.value;
+              setText(newValue);
+              initialTextRef.current = newValue;
             }}
             onKeyDown={handleKeyDown}
             onFocus={() => setFocused(true)}
@@ -196,6 +203,11 @@ export default function PromptBar({
               isDarkMode={isDarkMode}
               fullWidth={isWrapped}
               isListening={isListening}
+              includeCode={includeCode}
+              setIncludeCode={setIncludeCode}
+              isStreaming={isStreaming}
+              selectedModel={selectedModel}
+              setSelectedModel={setSelectedModel}
             />
           </div>
         </form>

@@ -1,24 +1,23 @@
 import React, { useState, useRef, useEffect } from "react";
 import styles from "./ChatUI.module.css";
 import PromptBar from "./components/PromptBar/PromptBar";
-import ModelSelector from "./components/PromptBar/ModelSelector";
+// import ModelSelector from "./components/PromptBar/ModelSelector";
 import ChatMessage from "./components/ChatMessage/ChatMessage";
 import { generateUUID } from "./utils/generateUUID";
-import {
-  fetchAvailableModels,
-  streamChatAssistant,
-} from "../../services/assistantService";
+import { streamChatAssistant } from "../../services/assistantService";
 
 export default function ChatUI({
   isDarkMode,
-  editorCode = "",
+  getEditorCodeRef,
   selectedText = "",
 }) {
   const [messages, setMessages] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [models, setModels] = useState([]);
-  const [selectedModel, setSelectedModel] = useState("");
+
   const [isStreaming, setIsStreaming] = useState(false);
+  const [selectedModel, setSelectedModel] = useState("");
+
+  const [includeCode, setIncludeCode] = useState(true);
 
   const workspaceRef = useRef(null);
   const promptDockRef = useRef(null);
@@ -75,17 +74,6 @@ export default function ChatUI({
     return () => observer.disconnect();
   }, [hasMessages]);
 
-  useEffect(() => {
-    async function loadModels() {
-      const data = await fetchAvailableModels();
-      setModels(data);
-      if (data && data.length > 0) {
-        setSelectedModel(data[0].id);
-      }
-    }
-    loadModels();
-  }, []);
-
   const handleSendMessage = async (text) => {
     if (!text || !text.trim() || isStreaming) return;
 
@@ -108,12 +96,14 @@ export default function ChatUI({
 
     const payload = {
       message: text,
-      current_code: editorCode,
       selected_text: selectedText,
       session_id: sessionIdRef.current,
       model_id: selectedModel,
     };
 
+    if (includeCode) {
+      payload.current_code = getEditorCodeRef?.current?.() ?? "";
+    }
     try {
       await streamChatAssistant(
         payload,
@@ -160,12 +150,6 @@ export default function ChatUI({
     <div className={`${styles["chat-container"]} ${themeClass}`}>
       <div className={styles["chat-header-chrome"]}>
         <span className={styles["chrome-title"]}>Chat with AI</span>
-        <ModelSelector
-          models={models}
-          selectedModel={selectedModel}
-          onModelChange={setSelectedModel}
-          isStreaming={isStreaming}
-        />
       </div>
 
       <div
@@ -221,6 +205,11 @@ export default function ChatUI({
                 isDarkMode={isDarkMode}
                 onSubmit={handleSendMessage}
                 disabled={isStreaming}
+                includeCode={includeCode}
+                setIncludeCode={setIncludeCode}
+                isStreaming={isStreaming}
+                selectedModel={selectedModel}
+                setSelectedModel={setSelectedModel}
               />
             </div>
           </div>
@@ -233,6 +222,11 @@ export default function ChatUI({
               isDarkMode={isDarkMode}
               onSubmit={handleSendMessage}
               disabled={isStreaming}
+              includeCode={includeCode}
+              setIncludeCode={setIncludeCode}
+              isStreaming={isStreaming}
+              selectedModel={selectedModel}
+              setSelectedModel={setSelectedModel}
             />
           </div>
         )}

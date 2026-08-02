@@ -200,7 +200,8 @@
   --sb-blue: #306699;
   --sb-green: #30d158;
   --sb-red: #ff453a;
-  --sb-yellow: #ffd60a;
+  --sb-yellow: #695a0d;
+  --sb-grey: #7d7e7d;
 
   /* Elevation */
   --sb-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
