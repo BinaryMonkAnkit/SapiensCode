@@ -168,6 +168,8 @@
   --mrk-hover: rgba(0,0,0,.05);
 
   --mrk-inline-bg: rgba(0,0,0,.06);
+
+  
   
 }
 
@@ -190,6 +192,13 @@
   --sb-bg-elevated: rgba(28, 28, 30, 0.72);
   --sb-border: rgba(255, 255, 255, 0.09);
   --sb-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Separator line */
+
+  --sb-separator: #695a0d;       /* Subtle dark line */
+  --sb-separator-hover: #007acc; /* Blue on hover/drag */
+
+
 
   /* Text */
   --sb-text-primary: #f5f5f7;
@@ -215,13 +224,18 @@
 .light-theme,
 .light-theme .workspace {
   /* Surfaces */
-  --sb-page-bg: #f8f9fa;
-  --sb-bg-primary: #ffffff;
-  --sb-bg-secondary: #f1f3f5;
-  --sb-bg-tertiary: #e9ecef;
-  --sb-bg-elevated: rgba(255, 255, 255, 0.85);
-  --sb-border: rgba(0, 0, 0, 0.08);
+  --sb-page-bg:#e0e3e4b2;
+  --sb-bg-primary: #e0e3e4b2;
+  --sb-bg-secondary: #e0e3e4b2;
+  --sb-bg-tertiary: #e0e3e4b2;
+  --sb-bg-elevated: rgba(237, 242, 243, 0.85);
+  --sb-border: rgba(203, 53, 53, 0.08);
   --sb-border-strong: rgba(0, 0, 0, 0.16);
+
+ /*Separator*/
+  --sb-separator: #010102;       /* Soft, eye-comfortable light gray line */
+  --sb-separator-hover: #007acc;
+
 
   /* Text */
   --sb-text-primary: #1c1c1e;

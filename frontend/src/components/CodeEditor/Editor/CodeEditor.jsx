@@ -92,6 +92,10 @@ const CodeEditor = ({
             padding: { top: 12, bottom: 12 },
             wordWrap: "on",
             wrappingIndent: "indent",
+            scrollbar: {
+              alwaysConsumeMouseWheel: true, // Allows next distinct gesture to scroll parent
+            },
+            overviewRulerLanes: 1,
           }}
         />
       </div>

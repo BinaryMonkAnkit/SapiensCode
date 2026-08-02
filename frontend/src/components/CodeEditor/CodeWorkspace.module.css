@@ -68,8 +68,9 @@
    RESIZE HANDLE STYLES (Flush 0.5px line with direct targeting)
    ======================================================= */
 
+/* Base handle style using the dynamic CSS variable */
 .resizeHandle {
-  background-color: var(--sb-yellow, #7d7e7d) !important;
+  background-color: var(--sb-separator, #d1d5db) !important;
   outline: none;
   flex-shrink: 0;
   padding: 0 !important;
@@ -89,7 +90,7 @@
   max-width: 0.5px !important;
   height: 100% !important;
   cursor: col-resize;
-  background-color: var(--sb-yellow, #7d7e7d) !important;
+  background-color: var(--sb-separator, #d1d5db) !important;
 }
 
 /* MOBILE / VERTICAL MODE (0.5px Horizontal Line) */
@@ -101,15 +102,14 @@
   min-height: 0.5px !important;
   max-height: 0.5px !important;
   cursor: row-resize;
-  background-color: var(--sb-yellow, #7d7e7d) !important;
+  background-color: var(--sb-separator, #d1d5db) !important;
 }
 
-/* HOVER & ACTIVE/DRAG STATE (Turns Blue) */
+/* HOVER & ACTIVE/DRAG STATE */
 .resizeHandle:hover,
 .resizeHandle:active,
 .resizeHandle[data-separator-state="dragged"],
 .resizeHandle[data-resize-handle-state="hover"],
-.resizeHandle[data-resize-handle-state="drag"],
-.resizeHandle[data-panel-resize-handle-enabled="true"] {
-  background-color: var(--sb-blue, #007acc) !important;
+.resizeHandle[data-resize-handle-state="drag"] {
+  background-color: var(--sb-separator-hover, #007acc) !important;
 }
