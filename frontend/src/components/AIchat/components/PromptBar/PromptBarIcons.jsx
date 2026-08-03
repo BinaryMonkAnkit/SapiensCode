@@ -54,7 +54,6 @@ export default function PromptBarIcons({
 
     const btnRect = buttonEl.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
     const margin = 8;
 
     el.style.left = "";
@@ -63,7 +62,6 @@ export default function PromptBarIcons({
     el.style.bottom = "";
     el.style.transform = "";
 
-    // Calculate vertical position (prefer above button unless near screen top)
     const isNearTop = btnRect.top < 60;
     if (isNearTop) {
       el.style.top = "calc(100% + 8px)";
@@ -73,11 +71,9 @@ export default function PromptBarIcons({
       el.style.top = "auto";
     }
 
-    // Center horizontal alignment
     el.style.left = "50%";
     el.style.right = "auto";
 
-    // Horizontal bounds check
     const tooltipRect = el.getBoundingClientRect();
     if (tooltipRect.left < margin) {
       const offset = margin - tooltipRect.left;
@@ -99,7 +95,7 @@ export default function PromptBarIcons({
     touchTimerRef.current = setTimeout(() => {
       setActiveTooltip(id);
       updateTooltipPosition(id);
-    }, 300); // Trigger tooltip on touch hold
+    }, 300);
   };
 
   const handleTouchEnd = () => {
@@ -117,25 +113,19 @@ export default function PromptBarIcons({
     const el = elRef.current;
     if (!el) return;
     el.classList.remove(styles.fogAnimate);
-    void el.offsetWidth; // Force reflow
+    void el.offsetWidth;
     el.classList.add(styles.fogAnimate);
     window.setTimeout(() => el.classList.remove(styles.fogAnimate), 900);
   }
 
-  function handleVoice(e) {
+  function handleVoice() {
     if (disabled) return;
-    if (e && e.type === "touchend") {
-      e.preventDefault(); // Prevents touch ghost click delays on mobile
-    }
     triggerFog(micRef);
     onVoice?.();
   }
 
-  function handleSend(e) {
+  function handleSend() {
     if (disabled) return;
-    if (e && e.type === "touchend") {
-      e.preventDefault();
-    }
     triggerFog(sendRef);
     onSend?.();
   }
@@ -147,7 +137,7 @@ export default function PromptBarIcons({
       }`}
       aria-hidden={false}
     >
-      {/* Left Side: Model Selector + Mic */}
+      {/* Left Side: Model Selector + Code Toggle */}
       <div className={styles.leftGroup}>
         <div
           className={styles.codeToggleContainer}
@@ -190,20 +180,15 @@ export default function PromptBarIcons({
         </div>
       </div>
 
-      {/* Right Side: MacOS Toggle + Send Button */}
+      {/* Right Side: Mic + Send Button */}
       <div className={styles.rightGroup}>
         <button
           ref={micRef}
           type="button"
           disabled={disabled}
           onClick={handleVoice}
-          onTouchStart={(e) => {
-            handleTouchStart("mic");
-          }}
-          onTouchEnd={(e) => {
-            handleTouchEnd();
-            handleVoice(e);
-          }}
+          onTouchStart={() => handleTouchStart("mic")}
+          onTouchEnd={handleTouchEnd}
           onMouseEnter={() => handleMouseEnter("mic")}
           aria-label={isListening ? "Stop Voice Listening" : "Voice Input"}
           className={`${styles.capsuleBtn} ${styles.micBtn} ${
@@ -257,13 +242,8 @@ export default function PromptBarIcons({
           type="button"
           disabled={disabled}
           onClick={handleSend}
-          onTouchStart={(e) => {
-            handleTouchStart("send");
-          }}
-          onTouchEnd={(e) => {
-            handleTouchEnd();
-            handleSend(e);
-          }}
+          onTouchStart={() => handleTouchStart("send")}
+          onTouchEnd={handleTouchEnd}
           onMouseEnter={() => handleMouseEnter("send")}
           aria-label={disabled ? "Sending..." : "Send"}
           className={`${styles.capsuleBtn} ${styles.sendBtn} ${

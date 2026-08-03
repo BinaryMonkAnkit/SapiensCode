@@ -22,10 +22,9 @@ export default function PromptBar({
   const recognitionRef = useRef(null);
   const [isWrapped, setIsWrapped] = useState(false);
 
-  // Tracks text existing BEFORE speech started
-  const initialTextRef = useRef("");
-  // Tracks all accumulated FINAL transcripts recorded during current voice session
-  const accumulatedFinalRef = useRef("");
+  const shouldListenRef = useRef(false);
+  const baseTextRef = useRef("");
+  const finalSpeechRef = useRef("");
 
   useLayoutEffect(() => {
     const el = textareaRef.current;
@@ -54,6 +53,91 @@ export default function PromptBar({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const stopListening = () => {
+    shouldListenRef.current = false;
+
+    if (recognitionRef.current) {
+      recognitionRef.current.onend = null;
+      try {
+        recognitionRef.current.stop();
+      } catch {}
+    }
+    setIsListening(false);
+
+    if (textareaRef.current) {
+      setText(textareaRef.current.value);
+    }
+  };
+
+  const startListeningSession = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) return;
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const recognition = new SpeechRecognition();
+
+    recognition.continuous = !isMobile;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      let currentInterim = "";
+
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        const chunk = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalSpeechRef.current += chunk.trim() + " ";
+        } else {
+          currentInterim += chunk;
+        }
+      }
+
+      const completeText =
+        baseTextRef.current + finalSpeechRef.current + currentInterim;
+
+      if (textareaRef.current) {
+        textareaRef.current.value = completeText;
+        textareaRef.current.style.height = "auto";
+        textareaRef.current.style.height = `${Math.max(
+          textareaRef.current.scrollHeight,
+          42,
+        )}px`;
+      }
+    };
+
+    recognition.onerror = (err) => {
+      console.error("Speech Recognition Error:", err);
+      stopListening();
+    };
+
+    recognition.onend = () => {
+      if (shouldListenRef.current && !isMobile) {
+        try {
+          startListeningSession();
+        } catch (e) {
+          console.error("Restart failed:", e);
+          stopListening();
+        }
+      } else {
+        stopListening();
+      }
+    };
+
+    recognitionRef.current = recognition;
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error("Session start error:", e);
+      stopListening();
+    }
+  };
+
   const toggleSpeechRecognition = () => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -63,89 +147,66 @@ export default function PromptBar({
       return;
     }
 
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
+    if (shouldListenRef.current) {
+      stopListening();
       return;
     }
 
-    // Capture baseline text before speech recognition starts
-    initialTextRef.current = value.trim() ? value.trim() + " " : "";
-    accumulatedFinalRef.current = "";
+    textareaRef.current?.blur();
 
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "en-US";
+    shouldListenRef.current = true;
+    baseTextRef.current = textareaRef.current?.value
+      ? textareaRef.current.value.trim() + " "
+      : "";
+    finalSpeechRef.current = "";
 
-    recognition.onstart = () => {
-      setIsListening(true);
-    };
-
-    recognition.onresult = (event) => {
-      let currentSessionFinal = "";
-      let interimTranscript = "";
-
-      // Walk through ALL results from index 0 to ensure zero lost chunks
-      for (let i = 0; i < event.results.length; ++i) {
-        const transcriptChunk = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          currentSessionFinal += transcriptChunk + " ";
-        } else {
-          interimTranscript += transcriptChunk;
-        }
-      }
-
-      // Store final speech chunks
-      accumulatedFinalRef.current = currentSessionFinal;
-
-      // Combine baseline text + all finalized speech + current live interim speech
-      const completeText =
-        initialTextRef.current +
-        accumulatedFinalRef.current +
-        interimTranscript;
-
-      setText(completeText);
-    };
-
-    recognition.onerror = (err) => {
-      console.error("Speech Recognition Error:", err);
-      // Ignore non-fatal audio-capture/no-speech warnings
-      if (err.error !== "no-speech" && err.error !== "audio-capture") {
-        setIsListening(false);
-      }
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognitionRef.current = recognition;
-    try {
-      recognition.start();
-    } catch (e) {
-      console.error("Failed to start speech recognition:", e);
-      setIsListening(false);
-    }
+    startListeningSession();
   };
 
   function handleSubmit(e) {
     if (e) e.preventDefault();
-    if (!value.trim()) return;
-    if (isListening && recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsListening(false);
+
+    const isMobile =
+      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+      ("ontouchstart" in window && navigator.maxTouchPoints > 0);
+
+    // Guard: Prevent native soft keyboard "Enter" submit events while focused in textarea on mobile
+    if (
+      isMobile &&
+      e &&
+      e.type === "submit" &&
+      document.activeElement === textareaRef.current
+    ) {
+      return;
     }
-    onSubmit(value);
+
+    const currentVal = textareaRef.current ? textareaRef.current.value : value;
+    if (!currentVal.trim()) return;
+
+    stopListening();
+    onSubmit(currentVal);
     setText("");
-    initialTextRef.current = "";
-    accumulatedFinalRef.current = "";
+    if (textareaRef.current) textareaRef.current.value = "";
+    baseTextRef.current = "";
+    finalSpeechRef.current = "";
   }
 
   function handleKeyDown(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
+    if (e.key === "Enter") {
+      const isMobile =
+        /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+        ("ontouchstart" in window && navigator.maxTouchPoints > 0);
+
+      if (isMobile) {
+        // Allow mobile soft keyboard Enter key to default to adding a new line (\n)
+        return;
+      }
+
+      // Desktop behavior: Enter sends message, Shift+Enter creates a new line
+      if (!e.shiftKey) {
+        e.preventDefault();
+        handleSubmit(e);
+      }
     }
   }
 
@@ -170,10 +231,11 @@ export default function PromptBar({
             ref={textareaRef}
             rows={1}
             value={value}
+            enterKeyHint="enter"
             onChange={(e) => {
               const newValue = e.target.value;
               setText(newValue);
-              initialTextRef.current = newValue;
+              baseTextRef.current = newValue;
             }}
             onKeyDown={handleKeyDown}
             onFocus={() => setFocused(true)}
