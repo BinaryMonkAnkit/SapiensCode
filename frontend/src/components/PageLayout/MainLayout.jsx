@@ -46,7 +46,7 @@ const getScrollableAncestorX = (el, boundary) => {
 };
 
 export default function MainLayout() {
-  const [activeIdx, setActiveIdx] = useState(0);
+  const [activeIdx, setActiveIdx] = useState(1);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   const isTransitioningRef = useRef(false);
