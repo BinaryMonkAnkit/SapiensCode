@@ -15,7 +15,6 @@ const SCROLL_CONFIG = {
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-// Separate DOM traversals for vertical vs horizontal scroll ancestors
 const getScrollableAncestorY = (el, boundary) => {
   let node = el;
   while (node && node !== boundary && node !== document.body) {
@@ -54,6 +53,9 @@ export default function MainLayout() {
   const innerScrollCooldownRef = useRef(false);
   const innerScrollTimeoutRef = useRef(null);
   const viewportRef = useRef(null);
+
+  const touchStartRef = useRef({ x: 0, y: 0 });
+  const touchHandledRef = useRef(false);
 
   const getEditorCodeRef = useRef(null);
 
@@ -118,7 +120,6 @@ export default function MainLayout() {
       const isSmallScreen = window.innerWidth <= 768;
 
       if (isSmallScreen) {
-        // --- MOBILE/SMALL SCREEN LOGIC (Horizontal Section Transitions) ---
         const effectiveDeltaX =
           Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
         const isVerticalDominant = Math.abs(e.deltaY) > Math.abs(e.deltaX);
@@ -169,7 +170,6 @@ export default function MainLayout() {
           changeSection(activeIdx + direction);
         }
       } else {
-        // --- DESKTOP LOGIC (Original Vertical Section Transitions) ---
         const isHorizontalDominant = Math.abs(e.deltaX) > Math.abs(e.deltaY);
 
         if (isHorizontalDominant) {
@@ -223,10 +223,52 @@ export default function MainLayout() {
       }
     };
 
+    const handleTouchStart = (e) => {
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+      touchHandledRef.current = false;
+    };
+
+    const handleTouchMove = (e) => {
+      if (touchHandledRef.current || isTransitioningRef.current) return;
+      if (window.innerWidth > 768) return;
+
+      const touch = e.touches[0];
+      const deltaX = touchStartRef.current.x - touch.clientX;
+      const deltaY = touchStartRef.current.y - touch.clientY;
+
+      const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY);
+
+      if (isHorizontal && Math.abs(deltaX) > 35) {
+        const scrollXEl = getScrollableAncestorX(e.target, viewport);
+        if (scrollXEl) {
+          const { scrollLeft, scrollWidth, clientWidth } = scrollXEl;
+          const scrollingRight = deltaX > 0;
+          const scrollingLeft = deltaX < 0;
+          const atLeft = scrollLeft <= 0;
+          const atRight = scrollLeft + clientWidth >= scrollWidth - 1;
+
+          if ((scrollingRight && !atRight) || (scrollingLeft && !atLeft)) {
+            return;
+          }
+        }
+
+        touchHandledRef.current = true;
+        const direction = deltaX > 0 ? 1 : -1;
+        changeSection(activeIdx + direction);
+      }
+    };
+
     window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
 
     return () => {
       window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
       clearTimeout(innerScrollTimeoutRef.current);
       clearTimeout(globalScrollTimeout);
     };

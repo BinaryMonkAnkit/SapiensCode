@@ -22,7 +22,10 @@ export default function PromptBarIcons({
 }) {
   const micRef = useRef(null);
   const sendRef = useRef(null);
+  const touchTimerRef = useRef(null);
+  const tooltipRefs = useRef({});
   const [models, setModels] = useState([]);
+  const [activeTooltip, setActiveTooltip] = useState(null);
 
   useEffect(() => {
     async function loadModels() {
@@ -44,6 +47,72 @@ export default function PromptBarIcons({
     loadModels();
   }, []);
 
+  const updateTooltipPosition = (id) => {
+    const el = tooltipRefs.current[id];
+    const buttonEl = el?.parentElement;
+    if (!el || !buttonEl) return;
+
+    const btnRect = buttonEl.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const margin = 8;
+
+    el.style.left = "";
+    el.style.right = "";
+    el.style.top = "";
+    el.style.bottom = "";
+    el.style.transform = "";
+
+    // Calculate vertical position (prefer above button unless near screen top)
+    const isNearTop = btnRect.top < 60;
+    if (isNearTop) {
+      el.style.top = "calc(100% + 8px)";
+      el.style.bottom = "auto";
+    } else {
+      el.style.bottom = "calc(100% + 8px)";
+      el.style.top = "auto";
+    }
+
+    // Center horizontal alignment
+    el.style.left = "50%";
+    el.style.right = "auto";
+
+    // Horizontal bounds check
+    const tooltipRect = el.getBoundingClientRect();
+    if (tooltipRect.left < margin) {
+      const offset = margin - tooltipRect.left;
+      el.style.transform = `translateX(calc(-50% + ${offset}px))`;
+    } else if (tooltipRect.right > viewportWidth - margin) {
+      const offset = tooltipRect.right - (viewportWidth - margin);
+      el.style.transform = `translateX(calc(-50% - ${offset}px))`;
+    } else {
+      el.style.transform = "translateX(-50%)";
+    }
+  };
+
+  const handleMouseEnter = (id) => {
+    updateTooltipPosition(id);
+  };
+
+  const handleTouchStart = (id) => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    touchTimerRef.current = setTimeout(() => {
+      setActiveTooltip(id);
+      updateTooltipPosition(id);
+    }, 300); // Trigger tooltip on touch hold
+  };
+
+  const handleTouchEnd = () => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    setTimeout(() => setActiveTooltip(null), 1200);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    };
+  }, []);
+
   function triggerFog(elRef) {
     const el = elRef.current;
     if (!el) return;
@@ -53,14 +122,20 @@ export default function PromptBarIcons({
     window.setTimeout(() => el.classList.remove(styles.fogAnimate), 900);
   }
 
-  function handleVoice() {
+  function handleVoice(e) {
     if (disabled) return;
+    if (e && e.type === "touchend") {
+      e.preventDefault(); // Prevents touch ghost click delays on mobile
+    }
     triggerFog(micRef);
     onVoice?.();
   }
 
-  function handleSend() {
+  function handleSend(e) {
     if (disabled) return;
+    if (e && e.type === "touchend") {
+      e.preventDefault();
+    }
     triggerFog(sendRef);
     onSend?.();
   }
@@ -76,9 +151,9 @@ export default function PromptBarIcons({
       <div className={styles.leftGroup}>
         <div
           className={styles.codeToggleContainer}
-          data-tooltip={
-            includeCode ? "Include Code Context" : "Exclude Code Context"
-          }
+          onMouseEnter={() => handleMouseEnter("code")}
+          onTouchStart={() => handleTouchStart("code")}
+          onTouchEnd={handleTouchEnd}
         >
           <label className={styles.macToggleLabel}>
             <span className={styles.toggleText}>Code</span>
@@ -93,6 +168,15 @@ export default function PromptBarIcons({
               <span className={styles.macToggleThumb} />
             </span>
           </label>
+          <span
+            ref={(el) => (tooltipRefs.current["code"] = el)}
+            className={`${styles.customTooltip} ${
+              activeTooltip === "code" ? styles.showTouchTooltip : ""
+            }`}
+            role="tooltip"
+          >
+            {includeCode ? "Include Code Context" : "Exclude Code Context"}
+          </span>
         </div>
 
         <div className={styles.minimalModelWrapper}>
@@ -113,7 +197,14 @@ export default function PromptBarIcons({
           type="button"
           disabled={disabled}
           onClick={handleVoice}
-          data-tooltip={isListening ? "Stop voice input" : "Voice input"}
+          onTouchStart={(e) => {
+            handleTouchStart("mic");
+          }}
+          onTouchEnd={(e) => {
+            handleTouchEnd();
+            handleVoice(e);
+          }}
+          onMouseEnter={() => handleMouseEnter("mic")}
           aria-label={isListening ? "Stop Voice Listening" : "Voice Input"}
           className={`${styles.capsuleBtn} ${styles.micBtn} ${
             isListening
@@ -150,6 +241,15 @@ export default function PromptBarIcons({
               <path d="M17.3 12a5.3 5.3 0 0 1-10.6 0H5a7 7 0 0 0 6 6.93V22h2v-3.07A7 7 0 0 0 19 12h-1.7Z" />
             </svg>
           )}
+          <span
+            ref={(el) => (tooltipRefs.current["mic"] = el)}
+            className={`${styles.customTooltip} ${
+              activeTooltip === "mic" ? styles.showTouchTooltip : ""
+            }`}
+            role="tooltip"
+          >
+            {isListening ? "Stop voice input" : "Voice input"}
+          </span>
         </button>
 
         <button
@@ -157,13 +257,29 @@ export default function PromptBarIcons({
           type="button"
           disabled={disabled}
           onClick={handleSend}
-          data-tooltip={disabled ? "Sending..." : "Send prompt"}
+          onTouchStart={(e) => {
+            handleTouchStart("send");
+          }}
+          onTouchEnd={(e) => {
+            handleTouchEnd();
+            handleSend(e);
+          }}
+          onMouseEnter={() => handleMouseEnter("send")}
           aria-label={disabled ? "Sending..." : "Send"}
           className={`${styles.capsuleBtn} ${styles.sendBtn} ${
             isDarkMode ? styles.sendDark : styles.sendLight
           }`}
         >
           <SendHorizontal className="w-5 h-5" />
+          <span
+            ref={(el) => (tooltipRefs.current["send"] = el)}
+            className={`${styles.customTooltip} ${
+              activeTooltip === "send" ? styles.showTouchTooltip : ""
+            }`}
+            role="tooltip"
+          >
+            {disabled ? "Sending..." : "Send prompt"}
+          </span>
         </button>
       </div>
     </div>

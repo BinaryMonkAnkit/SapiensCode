@@ -42,17 +42,12 @@
   background: rgba(0, 0, 0, 0.06) !important;
 }
 
-/* Tooltip System */
-[data-tooltip] {
-  position: relative;
-}
-
-[data-tooltip]::before {
-  content: attr(data-tooltip);
+/* Dynamic Tooltip System */
+.customTooltip {
   position: absolute;
   bottom: calc(100% + 8px);
   left: 50%;
-  transform: translateX(-50%) translateY(4px) scale(0.96);
+  transform: translateX(-50%) scale(0.95);
   padding: 4px 8px;
   border-radius: 6px;
   font-size: 0.72rem;
@@ -60,29 +55,39 @@
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  z-index: 100;
+  transition: opacity 0.15s ease, scale 0.15s ease;
+  z-index: 1000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-width: min(200px, 80vw);
 }
 
-.darkTheme [data-tooltip]::before {
+.darkTheme .customTooltip {
   background: #27272a;
   color: #f4f4f5;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.lightTheme [data-tooltip]::before {
+.lightTheme .customTooltip {
   background: #18181b;
   color: #ffffff;
 }
 
-[data-tooltip]:hover::before {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0) scale(1);
+@media (hover: hover) and (pointer: fine) {
+  .capsuleBtn:hover .customTooltip,
+  .codeToggleContainer:hover .customTooltip {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+.showTouchTooltip {
+  opacity: 1 !important;
+  scale: 1 !important;
 }
 
 /* macOS Style Code Toggle Switch */
 .codeToggleContainer {
+  position: relative;
   display: flex;
   align-items: center;
 }
@@ -184,6 +189,7 @@
   cursor: pointer;
   transition: transform 0.12s ease, opacity 0.12s ease, background 0.15s ease;
   color: inherit;
+  touch-action: manipulation;
 }
 
 .capsuleBtn svg {

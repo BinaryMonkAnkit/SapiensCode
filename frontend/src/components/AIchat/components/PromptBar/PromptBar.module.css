@@ -109,16 +109,35 @@
 }
 
 /* ==========================================================================
-   Mobile Query: 2% Margin Left and Right on Small Screens
+   Mobile Query: Reduced Outer Padding + Soft Faded Shadow (Original Shape Preserved)
    ========================================================================== */
 @media (max-width: 640px) {
   .promptBarWrapper {
-    padding-left: 1% !important;
-    padding-right: 1% !important;
+    padding: 0 !important;
+    margin-top: 0 !important;
   }
 
   .promptBarContainer {
     max-width: 100% !important;
     width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Maintain original rounded glass shape */
+  .glassBackdrop {
+    border-radius: 1.5rem !important;
+  }
+
+  /* Faded, soft ambient shadow without harsh boxy edges */
+  .backdropDark {
+    box-shadow: 
+      0 4px 20px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .backdropLight {
+    box-shadow: 
+      0 4px 20px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
   }
 }
