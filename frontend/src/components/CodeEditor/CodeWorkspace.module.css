@@ -9,8 +9,8 @@
   flex-direction: column;
   padding: 0;
   margin: 0;
-  background: var(--sb-bg-primary);
-  font-family: var(--sb-font-ui);
+  background: var(--sb-bg-primary, #1e1e1e);
+  font-family: var(--sb-font-ui, sans-serif);
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -23,10 +23,34 @@
   min-width: 0;
   display: flex;
   position: relative;
-  border: 1px solid var(--sb-border);
-  background: var(--sb-bg-primary);
+  border: 1px solid var(--sb-border, #333);
+  background: var(--sb-bg-primary, #1e1e1e);
   box-sizing: border-box;
   overflow: hidden;
+}
+
+/* Flex Group Wrappers */
+.horizontalGroup {
+  height: 100% !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+.verticalGroup {
+  height: 100% !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Panel Containers */
+.panelItem {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
 }
 
 .terminalColumn {
@@ -41,42 +65,51 @@
 }
 
 /* =======================================================
-   RESIZE HANDLE STYLES (AUTOMATIC DIRECTION SWITCHING)
+   RESIZE HANDLE STYLES (Flush 0.5px line with direct targeting)
    ======================================================= */
 
+/* Base handle style using the dynamic CSS variable */
 .resizeHandle {
-  background: var(--sb-bg-primary);
+  background-color: var(--sb-separator, #d1d5db) !important;
   outline: none;
   flex-shrink: 0;
-  transition: background var(--sb-dur-fast) var(--sb-ease);
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  z-index: 10;
+  touch-action: none;
+  transition: background-color 0.15s ease;
 }
 
-/* 1. HORIZONTAL MODE (DESKTOP / SIDE-BY-SIDE) */
-.wrapper :global([data-panel-group-direction="horizontal"]) > .resizeHandle,
-.wrapper :global([aria-orientation="horizontal"]) > .resizeHandle {
-  width: 6px !important;
+/* DESKTOP / HORIZONTAL MODE (0.5px Vertical Line) */
+.horizontalGroup > .resizeHandle,
+.resizeHandle[data-orientation="vertical"],
+:global([data-panel-group-direction="horizontal"]) > .resizeHandle {
+  width: 0.5px !important;
+  min-width: 0.5px !important;
+  max-width: 0.5px !important;
   height: 100% !important;
-  border-left: 1px solid var(--sb-border);
-  border-right: 1px solid var(--sb-border);
-  border-top: none;
-  border-bottom: none;
   cursor: col-resize;
+  background-color: var(--sb-separator, #d1d5db) !important;
 }
 
-/* 2. VERTICAL MODE (MOBILE / ROW STACK) */
-.wrapper :global([data-panel-group-direction="vertical"]) > .resizeHandle,
-.wrapper :global([aria-orientation="vertical"]) > .resizeHandle {
+/* MOBILE / VERTICAL MODE (0.5px Horizontal Line) */
+.verticalGroup > .resizeHandle,
+.resizeHandle[data-orientation="horizontal"],
+:global([data-panel-group-direction="vertical"]) > .resizeHandle {
   width: 100% !important;
-  height: 6px !important;
-  border-top: 1px solid var(--sb-border);
-  border-bottom: 1px solid var(--sb-border);
-  border-left: none;
-  border-right: none;
+  height: 0.5px !important;
+  min-height: 0.5px !important;
+  max-height: 0.5px !important;
   cursor: row-resize;
+  background-color: var(--sb-separator, #d1d5db) !important;
 }
 
+/* HOVER & ACTIVE/DRAG STATE */
 .resizeHandle:hover,
-.resizeHandle[data-separator-state="dragged"] {
-  background: var(--sb-blue, #007acc);
-  border-color: var(--sb-blue, #007acc);
+.resizeHandle:active,
+.resizeHandle[data-separator-state="dragged"],
+.resizeHandle[data-resize-handle-state="hover"],
+.resizeHandle[data-resize-handle-state="drag"] {
+  background-color: var(--sb-separator-hover, #007acc) !important;
 }

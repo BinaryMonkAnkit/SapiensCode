@@ -214,7 +214,7 @@ const Terminal = forwardRef(function Terminal(
     >
       <div className={styles.titlebar}>
         <div className={styles.titleGroup}>
-          <span className={styles.title}>Console Output</span>
+          {/* <span className={styles.title}>Console Output</span> */}
           <span className={styles.badge}>Interactive Terminal</span>
         </div>
 

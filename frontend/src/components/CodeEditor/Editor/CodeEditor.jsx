@@ -27,6 +27,7 @@ const CodeEditor = ({
   onRun,
   onStop,
   onEditorLayoutRef,
+  getEditorCodeRef,
 }) => {
   const editorRef = useRef(null);
   const codeAreaRef = useRef(null);
@@ -46,6 +47,15 @@ const CodeEditor = ({
       };
     }
   }, [onEditorLayoutRef]);
+
+  // Expose a function to get the latest editor code
+  useEffect(() => {
+    if (getEditorCodeRef) {
+      getEditorCodeRef.current = () => {
+        return editorRef.current?.getValue() ?? "";
+      };
+    }
+  }, [getEditorCodeRef]);
 
   //handler
   const handleEditorDidMount = createEditorMountHandler({
@@ -82,6 +92,10 @@ const CodeEditor = ({
             padding: { top: 12, bottom: 12 },
             wordWrap: "on",
             wrappingIndent: "indent",
+            scrollbar: {
+              alwaysConsumeMouseWheel: true, // Allows next distinct gesture to scroll parent
+            },
+            overviewRulerLanes: 1,
           }}
         />
       </div>

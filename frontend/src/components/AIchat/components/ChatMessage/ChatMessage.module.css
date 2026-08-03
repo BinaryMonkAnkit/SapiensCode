@@ -144,6 +144,22 @@
   padding-top: 4px;
 }
 
+@media (max-width: 640px) {
+  .message-row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .user-row .bubble-wrapper,
+  .assistant-row .bubble-wrapper {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    max-width: 100% !important;
+  }
+}
+
 @media (max-width: 480px) {
   .user-row .bubble-wrapper {
     max-width: 100%;

@@ -15,21 +15,6 @@
   min-width: 0 !important;
 }
 
-.chat-header-chrome {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 20;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  box-sizing: border-box;
-  border-bottom: 1px solid var(--chat-border);
-}
-
 .chrome-title {
   font-size: 13px;
   font-weight: 500;
@@ -48,7 +33,6 @@
   overflow: hidden;
 
   max-width: 100%;
-  position: relative;
 }
 
 .grid-empty {
@@ -98,8 +82,6 @@
 }
 
 .conversation-flow {
-
-
   max-width: 100%;
 
   flex: 1 1 auto;
@@ -113,6 +95,12 @@
   -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
   contain: layout style paint;
+
+  /* Firefox Scrollbar Desktop Defaults */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s ease 1s;
+
   -webkit-mask-image: linear-gradient(
     to bottom,
     black 0%,
@@ -127,21 +115,36 @@
   );
 }
 
+/* Firefox Desktop Hover */
+.conversation-flow:hover {
+  scrollbar-color: var(--scrollbar-thumb, rgba(150, 150, 150, 0.4)) transparent;
+  transition: scrollbar-color 0.15s ease 0s;
+}
+
+/* WebKit (Chrome, Safari, Edge) Scrollbar Base */
 .conversation-flow::-webkit-scrollbar {
-  width: 6px;
+  width: 10px;
 }
 
 .conversation-flow::-webkit-scrollbar-track {
   background: transparent;
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
 .conversation-flow::-webkit-scrollbar-thumb {
-  background: transparent;
+  background-color: transparent;
   border-radius: 99px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  /* Desktop Disappearing Delay (1s) */
+  transition: background-color 0.3s ease 1s;
 }
 
-.conversation-flow:hover::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
+.conversation-flow:hover::-webkit-scrollbar-thumb,
+.conversation-flow:active::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb, rgba(150, 150, 150, 0.4));
+  transition: background-color 0.15s ease 0s;
 }
 
 /* ==========================================================================
@@ -205,9 +208,13 @@
   width: 100%;
 }
 
-@media (max-width: 40rem) {
+/* ==========================================================================
+   Mobile & Tablet Query (Increased Delay & Safe Right Padding)
+   ========================================================================== */
+@media (max-width: 1024px) {
   .chat-container {
-    padding: 0 0.75rem;
+    padding: 0.5rem !important;
+    margin: 0 !important;
   }
 
   .chrome-title {
@@ -215,12 +222,28 @@
   }
 
   .prompt-dock-center {
-    width: 90%;
-    padding: 0 0.75rem;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .prompt-dock-bottom {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-bottom: 0rem !important;
+    padding: 0;
   }
 
   .scroll-content-centered-lane {
-    padding-left: 3.5%;
-    padding-right: 3.5%;
+    padding-left: 12px !important;
+    padding-right: 18px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
+
 }

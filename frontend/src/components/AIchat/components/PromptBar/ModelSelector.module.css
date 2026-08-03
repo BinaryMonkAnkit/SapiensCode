@@ -1,103 +1,214 @@
-.model-selector-container {
+.container {
   position: relative;
   display: inline-block;
   user-select: none;
 }
 
-/* Custom Trigger Button Layout */
-.model-capsule-wrapper {
-  background: var(--card-bg, rgba(255, 255, 255, 0.06));
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--card-border, rgba(255, 255, 255, 0.08));
-  border-radius: 6px;
-  padding: 6px 32px 6px 12px;
-  display: flex;
+/* --- Trigger Button --- */
+.capsuleWrapper {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 400;
-  /* Uses tokens for primary text color */
-  color: var(--sb-text-primary, var(--text-primary, #ffffff));
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
   outline: none;
-}
-
-.model-capsule-wrapper:hover,
-.model-capsule-wrapper.active {
-  background: var(--toggle-btn-bg, rgba(255, 255, 255, 0.12));
-  border-color: var(--card-border, rgba(255, 255, 255, 0.2));
-}
-
-.selected-text {
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
   white-space: nowrap;
 }
 
-.select-arrow-icon {
-  position: absolute;
-  right: 10px;
-  opacity: 0.6;
-  transition: transform 0.2s ease;
-  color: currentColor; /* Dynamically inherits text color */
+.lightTheme .capsuleWrapper {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #18181b;
 }
 
-.select-arrow-icon.rotated {
+.lightTheme .capsuleWrapper:hover,
+.lightTheme .capsuleWrapper.active {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.darkTheme .capsuleWrapper {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f4f4f5;
+}
+
+.darkTheme .capsuleWrapper:hover,
+.darkTheme .capsuleWrapper.active {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.selectedText {
+  letter-spacing: 0.2px;
+}
+
+.arrowIcon {
+  opacity: 0.75;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: currentColor;
+}
+
+.arrowIcon.rotated {
   transform: rotate(180deg);
 }
 
-/* ==========================================================================
-   ✨ THE SYNCED BLURRY DROPDOWN LIST FRAMEWORK
-   ========================================================================== */
-.dropdown-list-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  width: 100%;
-  box-sizing: border-box;
+/* --- Portal Dropdown Menu Styling --- */
+.selectMenu {
+  position: fixed;
+  transform: translateY(-100%); /* Opens upward from anchored top coordinate */
   margin: 0;
-  padding: 5px;
+  padding: 6px;
   list-style: none;
-  border-radius: 8px;
-  z-index: 1000;
-  box-shadow: var(--card-shadow, 0 10px 30px rgba(0, 0, 0, 0.35));
+  min-width: 220px;
+  width: max-content;
+  max-width: 320px;
 
-  /* Blurry Transparent Glass Framework */
-  background: var(--card-bg, rgba(255, 255, 255, 0.04));
-  backdrop-filter: blur(30px) saturate(190%);
-  -webkit-backdrop-filter: blur(25px) saturate(190%);
-  border: 1px solid var(--card-border, rgba(255, 255, 255, 0.08));
+  /* Trigger scrollbar at 18rem */
+  max-height: 18rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  border-radius: 12px;
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+
+  z-index: 999999; /* Higher than any app dock or modal */
+
+  animation: selectMenuInUp 0.16s ease-out;
+  transform-origin: bottom left;
+
+  /* Smooth Scrolling & Firefox Scrollbar */
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.2s ease;
 }
 
-/* List Items Buttons */
-.dropdown-item-btn {
-  width: 100%;
+/* Firefox: Show scrollbar thumb on hover */
+.selectMenu:hover {
+  scrollbar-color: rgba(150, 150, 150, 0.4) transparent;
+}
+
+/* --- Webkit (Chrome, Safari, Edge) Ultra-Thin macOS Scrollbar --- */
+.selectMenu::-webkit-scrollbar {
+  width: 5px;
+}
+
+.selectMenu::-webkit-scrollbar-track {
   background: transparent;
-  border: none;
-  outline: none;
-  text-align: left;
-  padding: 8px 12px;
-  font-size: 13px;
+  border-radius: 10px;
+}
+
+.selectMenu::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+}
+
+/* Light Theme Scrollbar Thumb Hover/Active */
+.lightTheme.selectMenu:hover::-webkit-scrollbar-thumb,
+.lightTheme.selectMenu:active::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.35);
+}
+
+.lightTheme.selectMenu::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.6);
+}
+
+/* Dark Theme Scrollbar Thumb Hover/Active */
+.darkTheme.selectMenu:hover::-webkit-scrollbar-thumb,
+.darkTheme.selectMenu:active::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.darkTheme.selectMenu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+/* Light Theme Menu Background */
+.lightTheme.selectMenu {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #18181b;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+/* Dark Theme Menu Background */
+.darkTheme.selectMenu {
+  background: rgba(30, 30, 32, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f4f4f5;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes selectMenuInUp {
+  from {
+    opacity: 0;
+    transform: translateY(-100%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-100%) scale(1);
+  }
+}
+
+/* Options Styling */
+.selectOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px;
   border-radius: 6px;
-  /* Secondary text variable token */
-  color: var(--sb-text-secondary, var(--text-secondary, rgba(255, 255, 255, 0.8)));
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Hover effects */
-.dropdown-item-btn:hover {
-  background: var(--toggle-btn-bg, rgba(255, 255, 255, 0.08));
-  color: var(--sb-text-primary, var(--text-primary, #ffffff));
-}
-
-/* Selected Active State */
-.dropdown-item-btn.selected-item {
-  background: var(--toggle-btn-bg, rgba(255, 255, 255, 0.12));
-  color: var(--sb-text-primary, var(--text-primary, #ffffff));
+  font-size: 12.5px;
   font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  white-space: nowrap;
+}
+
+.lightTheme .selectOption:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.darkTheme .selectOption:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.lightTheme .selectOptionActive {
+  background: rgba(10, 132, 255, 0.1);
+}
+
+.lightTheme .selectOptionActive:hover {
+  background: rgba(10, 132, 255, 0.16);
+}
+
+.darkTheme .selectOptionActive {
+  background: rgba(10, 132, 255, 0.2);
+}
+
+.darkTheme .selectOptionActive:hover {
+  background: rgba(10, 132, 255, 0.28);
+}
+
+.selectOptionLabel {
+  transition: color 0.15s ease, font-weight 0.15s ease;
+  line-height: 1.2;
+}
+
+.selectOptionActive .selectOptionLabel {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.checkIcon {
+  color: #3b82f6;
+  flex-shrink: 0;
 }

@@ -59,58 +59,20 @@ monaco.editor.defineTheme("glass-dark", {
       inherit: true,
       rules: [],
       colors: {
-        // Background
-        "editor.background": "#f1f3f5",
-        "editor.foreground": "#1F2937",
-
-        // Cursor
-        "editorCursor.foreground": "#2563EB",
-
-        // Selection
-        "editor.selectionBackground": "#3B82F633",
-        "editor.inactiveSelectionBackground": "#3B82F61A",
-
-        // Current line
-        "editor.lineHighlightBackground": "#00000006",
-
-        // Line numbers
-        "editorLineNumber.foreground": "#9CA3AF",
-        "editorLineNumber.activeForeground": "#374151",
-
-        // Guides
-        "editorIndentGuide.background": "#E5E7EB",
-        "editorIndentGuide.activeBackground": "#CBD5E1",
-
-        // Whitespace
-        "editorWhitespace.foreground": "#D1D5DB",
-
-        // Find
-        "editor.findMatchBackground": "#F59E0B66",
-        "editor.findMatchHighlightBackground": "#F59E0B22",
-
-        // Brackets
-        "editorBracketMatch.background": "#DBEAFE",
-        "editorBracketMatch.border": "#2563EB",
-
-        // Hover
-        "editorHoverWidget.background": "#FFFFFF",
-        "editorHoverWidget.border": "#D1D5DB",
-
-        // Suggest Widget
-        "editorSuggestWidget.background": "#FFFFFF",
-        "editorSuggestWidget.border": "#D1D5DB",
-        "editorSuggestWidget.selectedBackground": "#EEF4FF",
-
-        // Scrollbar
-        "scrollbarSlider.background": "#00000022",
-        "scrollbarSlider.hoverBackground": "#00000033",
-        "scrollbarSlider.activeBackground": "#00000055",
-      },
+      "editor.background": "#e0e3e4b2",
+      "editor.foreground": "#24292e",
+      "editorGutter.background": "#e0e3e4b2",
+      "editorLineNumber.foreground": "#959da5",
+      "editorLineNumber.activeForeground": "#24292e",
+      "editor.lineHighlightBackground": "#eaecef",
+      "editor.selectionBackground": "#c8c8fa80",
+      "editorCursor.foreground": "#0366d6",
+}
     });
   };
 
 
-
+// handler.js
 // handler.js
 
 export function createEditorMountHandler({
@@ -122,6 +84,7 @@ export function createEditorMountHandler({
   return (editor, monaco) => {
     editorRef.current = editor;
 
+    // Run Code Shortcut (Ctrl/Cmd + Enter)
     editor.addAction({
       id: "run-code-shortcut",
       label: "Run Code",
@@ -133,6 +96,7 @@ export function createEditorMountHandler({
       },
     });
 
+    // Resize Observer to handle container resizing smoothly
     if (codeAreaRef.current) {
       const observer = new ResizeObserver(() => {
         if (

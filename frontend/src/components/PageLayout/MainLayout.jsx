@@ -13,28 +13,8 @@ const SCROLL_CONFIG = {
   innerScrollLeakyDelay: 350,
 };
 
-const SECTIONS = [
-  {
-    id: "chat",
-    icon: MessageSquare,
-    content: (isDarkMode) => <ChatUI isDarkMode={isDarkMode} />,
-  },
-  {
-    id: "editor",
-    icon: Code,
-    content: (isDarkMode) => <CodeWorkspace isDarkMode={isDarkMode} />,
-  },
-  {
-    id: "docs",
-    icon: FileText,
-    content: (isDarkMode) => <Documentation isDarkMode={isDarkMode} />,
-    hideChrome: true,
-  },
-];
-
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-// Separate DOM traversals for vertical vs horizontal scroll ancestors
 const getScrollableAncestorY = (el, boundary) => {
   let node = el;
   while (node && node !== boundary && node !== document.body) {
@@ -74,6 +54,37 @@ export default function MainLayout() {
   const innerScrollTimeoutRef = useRef(null);
   const viewportRef = useRef(null);
 
+  const touchStartRef = useRef({ x: 0, y: 0 });
+  const touchHandledRef = useRef(false);
+
+  const getEditorCodeRef = useRef(null);
+
+  const SECTIONS = [
+    {
+      id: "chat",
+      icon: MessageSquare,
+      content: (isDarkMode) => (
+        <ChatUI isDarkMode={isDarkMode} getEditorCodeRef={getEditorCodeRef} />
+      ),
+    },
+    {
+      id: "editor",
+      icon: Code,
+      content: (isDarkMode) => (
+        <CodeWorkspace
+          isDarkMode={isDarkMode}
+          getEditorCodeRef={getEditorCodeRef}
+        />
+      ),
+    },
+    {
+      id: "docs",
+      icon: FileText,
+      content: (isDarkMode) => <Documentation isDarkMode={isDarkMode} />,
+      hideChrome: true,
+    },
+  ];
+
   const maxIndex = SECTIONS.length - 1;
   const clampIndex = (value) => clamp(value, 0, maxIndex);
 
@@ -106,66 +117,158 @@ export default function MainLayout() {
         isTransitioningRef.current = false;
       }, 200);
 
-      const isHorizontalDominant = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+      const isSmallScreen = window.innerWidth <= 768;
 
-      // 1. HORIZONTAL INTENT
-      if (isHorizontalDominant) {
-        const scrollXEl = getScrollableAncestorX(e.target, viewport);
-        if (scrollXEl) {
-          innerScrollCooldownRef.current = true;
-          clearTimeout(innerScrollTimeoutRef.current);
-          return; // Let table/code block scroll natively horizontally
-        }
-      }
+      if (isSmallScreen) {
+        const effectiveDeltaX =
+          Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        const isVerticalDominant = Math.abs(e.deltaY) > Math.abs(e.deltaX);
 
-      // 2. VERTICAL INTENT
-      // Walk up the DOM specifically looking for a VERTICALLY scrollable parent (e.g. Chat list container)
-      const scrollYEl = getScrollableAncestorY(e.target, viewport);
-
-      if (scrollYEl) {
-        const { scrollTop, scrollHeight, clientHeight } = scrollYEl;
-        const atTop = scrollTop <= 0;
-        const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
-        const scrollingDown = e.deltaY > 0;
-        const scrollingUp = e.deltaY < 0;
-
-        const innerCanStillScroll =
-          (scrollingDown && !atBottom) || (scrollingUp && !atTop);
-
-        if (innerCanStillScroll) {
-          innerScrollCooldownRef.current = true;
-          clearTimeout(innerScrollTimeoutRef.current);
-          return; // Let chat container scroll natively vertically
-        } else {
-          // Boundary hit: absorb fast trackpad momentum ticks
-          if (innerScrollCooldownRef.current) {
+        if (isVerticalDominant) {
+          const scrollYEl = getScrollableAncestorY(e.target, viewport);
+          if (scrollYEl) {
+            innerScrollCooldownRef.current = true;
             clearTimeout(innerScrollTimeoutRef.current);
-            innerScrollTimeoutRef.current = setTimeout(() => {
-              innerScrollCooldownRef.current = false;
-            }, SCROLL_CONFIG.innerScrollLeakyDelay);
-
-            e.preventDefault();
             return;
           }
         }
+
+        const scrollXEl = getScrollableAncestorX(e.target, viewport);
+        if (scrollXEl) {
+          const { scrollLeft, scrollWidth, clientWidth } = scrollXEl;
+          const atLeft = scrollLeft <= 0;
+          const atRight = scrollLeft + clientWidth >= scrollWidth - 1;
+          const scrollingRight = effectiveDeltaX > 0;
+          const scrollingLeft = effectiveDeltaX < 0;
+
+          const innerCanStillScroll =
+            (scrollingRight && !atRight) || (scrollingLeft && !atLeft);
+
+          if (innerCanStillScroll) {
+            innerScrollCooldownRef.current = true;
+            clearTimeout(innerScrollTimeoutRef.current);
+            return;
+          } else {
+            if (innerScrollCooldownRef.current) {
+              clearTimeout(innerScrollTimeoutRef.current);
+              innerScrollTimeoutRef.current = setTimeout(() => {
+                innerScrollCooldownRef.current = false;
+              }, SCROLL_CONFIG.innerScrollLeakyDelay);
+
+              e.preventDefault();
+              return;
+            }
+          }
+        }
+
+        e.preventDefault();
+        if (isTransitioningRef.current || innerScrollCooldownRef.current)
+          return;
+
+        if (Math.abs(effectiveDeltaX) > 18) {
+          const direction = effectiveDeltaX > 0 ? 1 : -1;
+          changeSection(activeIdx + direction);
+        }
+      } else {
+        const isHorizontalDominant = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+
+        if (isHorizontalDominant) {
+          const scrollXEl = getScrollableAncestorX(e.target, viewport);
+          if (scrollXEl) {
+            innerScrollCooldownRef.current = true;
+            clearTimeout(innerScrollTimeoutRef.current);
+            return;
+          }
+        }
+
+        const scrollYEl = getScrollableAncestorY(e.target, viewport);
+        if (scrollYEl) {
+          const { scrollTop, scrollHeight, clientHeight } = scrollYEl;
+          const atTop = scrollTop <= 0;
+          const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+          const scrollingDown = e.deltaY > 0;
+          const scrollingUp = e.deltaY < 0;
+
+          const innerCanStillScroll =
+            (scrollingDown && !atBottom) || (scrollingUp && !atTop);
+
+          if (innerCanStillScroll) {
+            innerScrollCooldownRef.current = true;
+            clearTimeout(innerScrollTimeoutRef.current);
+            return;
+          } else {
+            if (innerScrollCooldownRef.current) {
+              clearTimeout(innerScrollTimeoutRef.current);
+              innerScrollTimeoutRef.current = setTimeout(() => {
+                innerScrollCooldownRef.current = false;
+              }, SCROLL_CONFIG.innerScrollLeakyDelay);
+
+              e.preventDefault();
+              return;
+            }
+          }
+        }
+
+        e.preventDefault();
+        if (isTransitioningRef.current || innerScrollCooldownRef.current)
+          return;
+
+        if (
+          Math.abs(e.deltaY) > 18 &&
+          Math.abs(e.deltaY) > Math.abs(e.deltaX)
+        ) {
+          const direction = e.deltaY > 0 ? 1 : -1;
+          changeSection(activeIdx + direction);
+        }
       }
+    };
 
-      // 3. SECTION CHANGE
-      // Only runs if no inner container can scroll in the intended direction
-      e.preventDefault();
+    const handleTouchStart = (e) => {
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+      touchHandledRef.current = false;
+    };
 
-      if (isTransitioningRef.current || innerScrollCooldownRef.current) return;
+    const handleTouchMove = (e) => {
+      if (touchHandledRef.current || isTransitioningRef.current) return;
+      if (window.innerWidth > 768) return;
 
-      if (Math.abs(e.deltaY) > 18 && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        const direction = e.deltaY > 0 ? 1 : -1;
+      const touch = e.touches[0];
+      const deltaX = touchStartRef.current.x - touch.clientX;
+      const deltaY = touchStartRef.current.y - touch.clientY;
+
+      const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY);
+
+      if (isHorizontal && Math.abs(deltaX) > 35) {
+        const scrollXEl = getScrollableAncestorX(e.target, viewport);
+        if (scrollXEl) {
+          const { scrollLeft, scrollWidth, clientWidth } = scrollXEl;
+          const scrollingRight = deltaX > 0;
+          const scrollingLeft = deltaX < 0;
+          const atLeft = scrollLeft <= 0;
+          const atRight = scrollLeft + clientWidth >= scrollWidth - 1;
+
+          if ((scrollingRight && !atRight) || (scrollingLeft && !atLeft)) {
+            return;
+          }
+        }
+
+        touchHandledRef.current = true;
+        const direction = deltaX > 0 ? 1 : -1;
         changeSection(activeIdx + direction);
       }
     };
 
     window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
 
     return () => {
       window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
       clearTimeout(innerScrollTimeoutRef.current);
       clearTimeout(globalScrollTimeout);
     };
