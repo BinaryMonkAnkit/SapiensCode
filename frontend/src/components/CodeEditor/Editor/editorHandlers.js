@@ -73,30 +73,29 @@ monaco.editor.defineTheme("glass-dark", {
 
 
 // handler.js
-// handler.js
-
 export function createEditorMountHandler({
   editorRef,
   codeAreaRef,
-  isRunning,
+  getIsRunning,
   onRun,
 }) {
   return (editor, monaco) => {
     editorRef.current = editor;
 
-    // Run Code Shortcut (Ctrl/Cmd + Enter)
-    editor.addAction({
-      id: "run-code-shortcut",
-      label: "Run Code",
-      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
-      run: () => {
-        if (!isRunning) {
-          onRun();
-        }
-      },
-    });
+    // Use addCommand with a unique keybinding (automatically managed per editor instance)
+    const disposable = editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+      () => {
+        if (getIsRunning && getIsRunning()) return;
 
-    // Resize Observer to handle container resizing smoothly
+        const currentCode = editor.getValue();
+        if (currentCode.trim()) {
+          onRun(currentCode);
+        }
+      }
+    );
+
+    // Clean up ResizeObserver when editor unmounts
     if (codeAreaRef.current) {
       const observer = new ResizeObserver(() => {
         if (
@@ -104,11 +103,15 @@ export function createEditorMountHandler({
           codeAreaRef.current.clientHeight > 0
         ) {
           editor.layout();
-          observer.disconnect();
         }
       });
 
       observer.observe(codeAreaRef.current);
+
+      editor.onDidDispose(() => {
+        observer.disconnect();
+        disposable?.dispose();
+      });
     }
   };
 }
