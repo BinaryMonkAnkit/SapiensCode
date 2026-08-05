@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import Editor from "@monaco-editor/react";
-// import "../../styles/tokens.css";
 import styles from "./CodeEditor.module.css";
 import EditorToolbar, { LANGUAGES } from "./EditorToolBar";
 import {
@@ -32,6 +31,18 @@ const CodeEditor = ({
   const editorRef = useRef(null);
   const codeAreaRef = useRef(null);
 
+  // Keep references updated to bypass stale closure in Monaco actions
+  const onRunRef = useRef(onRun);
+  const isRunningRef = useRef(isRunning);
+
+  useEffect(() => {
+    onRunRef.current = onRun;
+  }, [onRun]);
+
+  useEffect(() => {
+    isRunningRef.current = isRunning;
+  }, [isRunning]);
+
   // Swap template when language changes
   useEffect(() => {
     if (DEFAULT_TEMPLATE[language]) {
@@ -52,20 +63,24 @@ const CodeEditor = ({
   useEffect(() => {
     if (getEditorCodeRef) {
       getEditorCodeRef.current = () => {
-        return editorRef.current?.getValue() ?? "";
+        return editorRef.current?.getValue() ?? code;
       };
     }
-  }, [getEditorCodeRef]);
+  }, [getEditorCodeRef, code]);
 
-  //handler
+  // Handler passed to Monaco mount
   const handleEditorDidMount = createEditorMountHandler({
     editorRef,
     codeAreaRef,
-    isRunning,
-    onRun,
+    getIsRunning: () => isRunningRef.current,
+    onRun: (codeFromEditor) => {
+      // Trigger execution with the latest editor value
+      if (onRunRef.current) {
+        onRunRef.current(codeFromEditor);
+      }
+    },
   });
 
-  // Safe optional chaining fallback
   const currentMonacoLanguage =
     LANGUAGES?.find((lang) => lang.value === language)?.monacoLang ||
     "plaintext";
@@ -88,12 +103,12 @@ const CodeEditor = ({
             fontSize: 14,
             scrollBeyondLastLine: false,
             automaticLayout: false,
-            tabSize: 2,
+            tabSize: 4,
             padding: { top: 12, bottom: 12 },
             wordWrap: "on",
             wrappingIndent: "indent",
             scrollbar: {
-              alwaysConsumeMouseWheel: true, // Allows next distinct gesture to scroll parent
+              alwaysConsumeMouseWheel: true,
             },
             overviewRulerLanes: 1,
           }}
@@ -106,7 +121,7 @@ const CodeEditor = ({
         setLanguage={setLanguage}
         isRunning={isRunning}
         isConnected={isConnected}
-        onRun={onRun}
+        onRun={() => onRun(editorRef.current?.getValue() ?? code)}
         onStop={onStop}
       />
     </div>

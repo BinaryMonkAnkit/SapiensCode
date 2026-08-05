@@ -16,6 +16,7 @@ const CodeWorkspace = ({ isDarkMode, getEditorCodeRef }) => {
   const terminalRef = useRef(null);
   const editorLayoutRef = useRef(null);
   const rafRef = useRef(null);
+  const isExecutingRef = useRef(false);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -37,7 +38,22 @@ const CodeWorkspace = ({ isDarkMode, getEditorCodeRef }) => {
     });
   };
 
-  const handleRun = () => terminalRef.current?.run(code, language);
+  const handleRun = (codeOverride) => {
+    if (isExecutingRef.current) return;
+
+    const codeToRun = typeof codeOverride === "string" ? codeOverride : code;
+    if (!codeToRun.trim()) return;
+
+    isExecutingRef.current = true;
+    terminalRef.current?.run(codeToRun, language);
+
+    // Simple debounce window (e.g., 300ms)
+    setTimeout(() => {
+      isExecutingRef.current = false;
+    }, 300);
+  };
+
+  // const handleRun = () => terminalRef.current?.run(code, language);
   const handleStop = () => terminalRef.current?.stop();
 
   return (
