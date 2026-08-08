@@ -6,7 +6,7 @@ import asyncio
 import os
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv
-
+import traceback
 from ..schemas.languages import get_language_config, LanguageConfig
 from ..schemas.execution import CodeExecutionRequest
 from .docker_runner import prepare_workspace, build_docker_args, kill_container, cleanup_workspace
@@ -84,6 +84,10 @@ async def execute_code_payload(
     except Exception as exc:
         await run_slots.release()
         cleanup_workspace(prepared.host_dir)
+        print("[DEBUG] docker_args:", docker_args)
+        print("[DEBUG] exception type:", type(exc).__name__)
+        print("[DEBUG] exception repr:", repr(exc))
+        print("[DEBUG] traceback:\n", traceback.format_exc())
         return {"success": False, "error": f"Container engine execution error: {exc}"}
 
     # Update active state bounds
