@@ -36,7 +36,8 @@ def _cmd_echo(args: List[str]) -> Dict[str, Any]:
 
 
 def _cmd_clear(args: List[str]) -> Dict[str, Any]:
-    return {"output": "", "action": "CLEAR_SCREEN"}
+    # Return "__CLEAR__" so the frontend recognizes the clear sentinel
+    return {"output": "__CLEAR__", "action": "CLEAR_SCREEN"}
 
 
 # Command Dispatch Registry
