@@ -8,11 +8,19 @@ Run with:
 """
 
 import uvicorn
+import os
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
 
 from app.code_execution.router import router as terminal_router
+from dotenv import load_dotenv
 from app.ai_chat.router import router as assistant_router
+
+load_dotenv()
+
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS")
 
 # Initialize the main FastAPI app
 app = FastAPI(
@@ -24,7 +32,7 @@ app = FastAPI(
 # Setup CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
